@@ -1,51 +1,46 @@
 'use client';
-import React, { Dispatch, SetStateAction, JSX, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit3, Trash2, Package, Search, Star, TrendingUp } from 'lucide-react';
-import { Store, ProductFormData, Product, useAppStore } from '@/store/useAppStore';
+import { Store, ProductFormData, Product, useAppStore, UserProfile } from '@/store/useAppStore';
 import { renderProductForm } from './productForm';
 import Cookies from 'js-cookie';
 
 // Props interface for RenderProducts component
 interface RenderProductsProps {
-  stores: Store[];
-  showProductForm: boolean;
-  editingProductId: string | null;
-  productFormData: ProductFormData;
-  isSubmitting: boolean;
-  setIsSubmitting: (value: boolean) => void;
   addNotification: (message: string, type: 'success' | 'error', duration?: number) => void;
-  setShowProductForm: Dispatch<SetStateAction<boolean>>;
-  setProductFormData: Dispatch<SetStateAction<ProductFormData>>;
-  setEditingProductId: Dispatch<SetStateAction<string | null>>;
-  handleEditProduct: (storeId: string, product: Product) => void;
-  handleDeleteProduct: (storeId: string, productId: string) => Promise<void>;
+  fetchUserProfile: () => Promise<UserProfile | null>;
 }
 
-const RenderProductsManagement: React.FC<RenderProductsProps> = ({
-  stores,
-  showProductForm,
-  editingProductId,
-  productFormData,
-  isSubmitting,
-  setShowProductForm,
-  setProductFormData,
-  setEditingProductId,
-  handleEditProduct,
-  handleDeleteProduct,
-  addNotification,
-  setIsSubmitting,
-}) => {
-  const { userProfile, setUserProfile } = useAppStore();
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [localProducts, setLocalProducts] = useState<Product[]>(stores[0]?.products || []);
+const RenderProductsManagement: React.FC<RenderProductsProps> = ({ addNotification, fetchUserProfile }) => {
+  const { userProfile } = useAppStore();
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [productFormData, setProductFormData] = useState<ProductFormData>({
+    name: '',
+    price: 0,
+    description: '',
+    images: [],
+    existingImages: [],
+    isAvailable: true,
+    discountPrice: 0,
+    stockCount: 0,
+    tags: [],
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [localProducts, setLocalProducts] = useState<Product[]>([]);
 
-  // Sync localProducts with stores prop when it changes
+  // Sync localProducts with userProfile.stores when it changes
   useEffect(() => {
-    setLocalProducts(stores[0]?.products || []);
-  }, [stores]);
+    if (userProfile?.stores && userProfile.stores.length > 0) {
+      setLocalProducts(userProfile.stores[0]?.products || []);
+    } else {
+      setLocalProducts([]);
+    }
+  }, [userProfile]);
 
-  const store = stores[0];
+  const store = userProfile?.stores?.[0];
 
   const filteredProducts = localProducts.filter(product =>
     product?.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -61,6 +56,7 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({
     },
   };
 
+  // Function to handle adding or updating a product
   const handleAddProduct = async (
     e: React.FormEvent,
     storeId: string,
@@ -113,25 +109,12 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({
         },
         body: formData,
       });
-      console.log(response)
 
       if (!response.ok) throw new Error('Product failed to enlist');
-      const newProduct: Product = await response.json();
+      await response.json(); // Process response but no need to store it since we fetch userProfile
 
-      // Update UI
-      setUserProfile({
-        ...userProfile!,
-        stores: userProfile!.stores.map(store =>
-          store._id === storeId
-            ? {
-                ...store,
-                products: isEdit
-                  ? (store.products || []).map(p => p._id === editingProductId ? newProduct : p)
-                  : [...(store.products || []), newProduct],
-              }
-            : store
-        ),
-      });
+      // Fetch updated user profile
+      await fetchUserProfile();
 
       // Reset form
       setProductFormData({
@@ -157,6 +140,55 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({
     }
   };
 
+  // Function to handle editing a product
+  const handleEditProduct = (storeId: string, product: Product) => {
+    setProductFormData({
+      name: product.name,
+      price: product.price,
+      description: product.description || '',
+      images: [],
+      existingImages: product.images || [],
+      isAvailable: product.isAvailable,
+      discountPrice: product.discountPrice || 0,
+      stockCount: product.stockCount || 0,
+      tags: product.tags || [],
+    });
+    setEditingProductId(product._id);
+    setShowProductForm(true);
+  };
+
+  // Function to handle deleting a product
+  const handleDeleteProduct = async (storeId: string, productId: string) => {
+    const token = Cookies.get('token');
+    if (!token) {
+      addNotification('Auth error, can’t delete', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/store/${storeId}/products/${productId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to delete product');
+
+      // Fetch updated user profile
+      await fetchUserProfile();
+
+      addNotification('Product deleted successfully', 'success');
+    } catch (error: unknown) {
+      const err = error as Error;
+      addNotification(`Error: ${err.message}`, 'error');
+    }
+  };
+
+  // Function to toggle product availability
   const toggleProductAvailability = async (productId: string, currentStatus: boolean) => {
     const previousProducts = [...localProducts];
     setLocalProducts(prevProducts =>
@@ -182,8 +214,9 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({
         throw new Error('Failed to toggle product availability');
       }
 
-      const data = await res.json();
-      console.log('Product availability updated:', data);
+      await res.json();
+      // Fetch updated user profile
+      await fetchUserProfile();
     } catch (error) {
       console.error('Error toggling availability:', error);
       setLocalProducts(previousProducts);
@@ -330,17 +363,9 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({
                   className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2.5 sm:p-3 bg-white border border-gray-200 rounded-md hover:shadow-md transition-all group gap-2 sm:gap-0"
                 >
                   <div className="flex items-center gap-2 sm:gap-3 flex-1">
-                    {product.imageUrl ? (
-                      <img
-                        src={product.imageUrl}
-                        alt={product.name}
-                        className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-md"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white border border-gray-200 rounded-md flex items-center justify-center">
-                        <Package className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
-                      </div>
-                    )}
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white border border-gray-200 rounded-md flex items-center justify-center">
+                      <Package className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                    </div>
                     <div className="flex-1 space-y-0.5 sm:space-y-1">
                       <h4 className="font-medium text-gray-800 text-xs sm:text-sm group-hover:text-indigo-500 transition-colors">
                         {product.name}

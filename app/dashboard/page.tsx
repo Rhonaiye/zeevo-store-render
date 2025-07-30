@@ -2,10 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  Home, Store, Settings, LogOut, Plus, Edit3, Eye, BarChart3,
-  Instagram, Facebook, Twitter, Loader2, ChevronDown, Link, EyeOff, Package, Menu, X, Mail, Save,
+  Home, Store, Settings,Plus, Edit3, Eye, BarChart3, Loader2,  Package, Menu,
   CheckCircle, Clock
 } from 'lucide-react';
 import Image from 'next/image';
@@ -14,9 +13,7 @@ import RenderSettings from '@/components/layout/settings';
 import RenderStoreManagement from '@/components/layout/storeManagement';
 import RenderProductsManagement from '@/components/layout/productManagement';
 import StoreAnalytics from '@/components/layout/storeAnalytics';
-import { renderProductForm } from '@/components/layout/productForm';
 import Notification from '@/components/ui/notification';
-import StoreForm from '@/components/layout/storeForm';
 import Sidebar from '@/components/ui/sideBar';
 import { useAppStore, Analytics, Product, UserProfile, NavItem, ActionCard, QuickStat, FormData, ProductFormData, NotificationData, Store as IStore } from '@/store/useAppStore';
 
@@ -29,14 +26,9 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   const { userProfile, setUserProfile } = useAppStore();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showEditForm, setShowEditForm] = useState(false);
-  const [showProductForm, setShowProductForm] = useState(false);
-  const [editingStoreId, setEditingStoreId] = useState<string | null>(null);
-  const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const router = useRouter();
@@ -47,16 +39,6 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
     }
   }, []);
 
-  const [formData, setFormData] = useState<FormData>({
-    name: '', slug: '', description: '', primaryColor: '#3B82F6', secondaryColor: '#1F2937',
-    currency: 'USD', domain: '', socialLinks: { instagram: '', facebook: '', twitter: '', tiktok: '' },
-    contact: { email: '', phone: '', address: '' },
-  });
-
-  const [productFormData, setProductFormData] = useState<ProductFormData>({
-    name: '', price: 0, description: '', imageUrl: '', isAvailable: true,
-    discountPrice: 0, stockCount: 0, tags: [], 
-  });
 
   const addNotification = (message: string, type: 'success' | 'error', duration = 5000) => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -88,27 +70,35 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
     }
   };
 
-  const fetchUserProfile = async () => {
-    const token = Cookies.get('token');
-    if (!token) {
-      addNotification('Auth error, no code to steer', 'error');
-      return null;
+const fetchUserProfile = async (): Promise<UserProfile | null> => {
+  const token = Cookies.get('token');
+  if (!token) {
+    addNotification('Auth error, no code to steer', 'error');
+    return null;
+  }
+
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/profile`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Profile fetch, no road clear');
     }
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/profile`, {
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error('Profile fetch, no road clear');
-      const { data } = await response.json();
-      console.log(data)
-      return data as UserProfile;
-    } catch (error) {
-      const err = error as Error;
-      addNotification(`Error fetching profile: ${err.message}`, 'error');
-      console.error('Error fetching user profile:', err);
-      return null;
-    }
-  };
+
+    const { data } = await response.json();
+    console.log(data);
+    return data as UserProfile;
+  } catch (error) {
+    const err = error as Error;
+    addNotification(`Error fetching profile: ${err.message}`, 'error');
+    console.error('Error fetching user profile:', err);
+    return null;
+  }
+};
 
   const handleRetry = async () => {
     setIsLoading(true);
@@ -178,149 +168,10 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
     }
   };
 
-  const handleEditStore = (store: IStore) => {
-    setEditingStoreId(store._id);
-    setFormData({
-      name: store.name || '', slug: store.slug || '', description: store.description || '',
-      primaryColor: store.primaryColor || '#3B82F6', secondaryColor: store.secondaryColor || '#1F2937',
-      currency: store.currency || 'USD', domain: store.domain || '',
-      socialLinks: {
-        instagram: store.socialLinks?.instagram || '',
-        facebook: store.socialLinks?.facebook || '',
-        twitter: store.socialLinks?.twitter || '',
-        tiktok: store.socialLinks?.tiktok || '',
-      },
-      contact: {
-        email: store.contact?.email || '',
-        phone: store.contact?.phone || '',
-        address: store.contact?.address || '',
-      },
-    });
-    setShowEditForm(true);
-  };
-
-  const handleFormSubmit = async (e: React.FormEvent, isEdit = false) => {
-    e.preventDefault();
-    if (!isEdit && (userProfile?.stores?.length || 0) >= 1) {
-      addNotification('Store limit reached, no wave', 'error');
-      return;
-    }
-    const token = Cookies.get('token');
-    if (!token) {
-      addNotification('Auth error, can’t save', 'error');
-      return;
-    }
-    try {
-      setIsSubmitting(true);
-      const response = await fetch(
-        isEdit ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/store/update` : `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/store/create`,
-        {
-          method: isEdit ? 'PUT' : 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ ...formData, slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, '-'), isActive: true }),
-        }
-      );
-      if (!response.ok) throw new Error('Store failed to save');
-      const profile = await fetchUserProfile();
-      if (!profile) {
-        throw new Error('Failed to fetch updated user profile');
-      }
-      setUserProfile(profile);
-      setFormData({
-        name: '', slug: '', description: '', primaryColor: '#3B82F6', secondaryColor: '#1F2937',
-        currency: 'USD', domain: '', socialLinks: { instagram: '', facebook: '', twitter: '', tiktok: '' },
-        contact: { email: '', phone: '', address: '' },
-      });
-      setShowCreateForm(false);
-      setShowEditForm(false);
-      setEditingStoreId(null);
-      addNotification(`Store ${isEdit ? 'updated' : 'created'}, all rave`, 'success');
-    } catch (error: unknown) {
-      const err = error as Error;
-      addNotification(`Error: ${err.message}, no save`, 'error');
-      console.error('Error in handleFormSubmit:', err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
 
 
 
-  const handleEditProduct = (storeId: string, product: Product) => {
-    setEditingProductId(product._id);
-    setProductFormData({
-      name: product.name,
-      price: product.price,
-      description: product.description || '',
-      imageUrl: product.imageUrl || '',
-      isAvailable: product.isAvailable,
-      discountPrice: product.discountPrice || 0,
-      stockCount: product.stockCount || 0,
-      tags: product.tags || [],
-    });
-    setShowProductForm(true);
-  };
-
-  const handleDeleteProduct = async (storeId: string, productId: string) => {
-    const token = Cookies.get('token');
-    if (!token) {
-      addNotification('Auth error, no bend', 'error');
-      return;
-    }
-    try {
-      setIsSubmitting(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/store/${storeId}/products/${productId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error('Delete failed, no send');
-      setUserProfile({
-        ...userProfile!,
-        stores: userProfile!.stores.map(store =>
-          store._id === storeId
-            ? { ...store, products: (store.products || []).filter(p => p._id !== productId) }
-            : store
-        ),
-      });
-      addNotification('Product deleted, to end', 'success');
-    } catch (error: unknown) {
-      const err = error as Error;
-      addNotification(`Error: ${err.message}, no bend`, 'error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleCopyFallback = (text: string) => {
-  const input = document.createElement('input');
-  input.value = text;
-  document.body.appendChild(input);
-  input.select();
-  document.execCommand('copy');
-  document.body.removeChild(input);
-  addNotification('Copied using fallback', 'success');
-};
-
-
-const handleCopyStoreUrl = (slug: string) => {
-  const url = `http://${slug}.172.20.10.14.nip.io:3001/`;
-
-  if (navigator?.clipboard?.writeText) {
-    navigator.clipboard.writeText(url)
-      .then(() => addNotification('Store URL copied', 'success'))
-      .catch(() => addNotification('Copy failed', 'error'));
-  } else {
-    // fallback method for HTTP or unsupported browsers
-    const input = document.createElement('input');
-    input.value = url;
-    document.body.appendChild(input);
-    input.select();
-    document.execCommand('copy');
-    document.body.removeChild(input);
-    addNotification('Copied using fallback', 'success');
-  }
-};
 
 
   const getStatusIcon = (status: string) => {
@@ -359,53 +210,18 @@ const handleCopyStoreUrl = (slug: string) => {
         );
       case 'products':
         return (
-          <RenderProductsManagement
-            stores={userProfile?.stores || []}
-            showProductForm={showProductForm}
-            editingProductId={editingProductId}
-            productFormData={productFormData}
-            isSubmitting={isSubmitting}
-            setShowProductForm={setShowProductForm}
-            setProductFormData={setProductFormData}
-            setEditingProductId={setEditingProductId}
-            setIsSubmitting={setIsSubmitting}
-            addNotification={addNotification}
-            handleEditProduct={handleEditProduct}
-            handleDeleteProduct={handleDeleteProduct}
-            renderProductForm={renderProductForm}
-          />
+          <RenderProductsManagement addNotification={addNotification} fetchUserProfile={fetchUserProfile}/>
         );
       case 'store':
         return (
           <RenderStoreManagement
-            stores={userProfile?.stores || []}
-            showCreateForm={showCreateForm}
-            showEditForm={showEditForm}
-            showProductForm={showProductForm}
-            editingProductId={editingProductId}
-            isSubmitting={isSubmitting}
-            expandedSection={expandedSection}
-            setShowCreateForm={setShowCreateForm}
-            setShowEditForm={setShowEditForm}
-            setShowProductForm={setShowProductForm}
-            setExpandedSection={setExpandedSection}
-            setEditingStoreId={setEditingStoreId}
-            setFormData={setFormData}
-            formData={formData}
-            showCurrencyDropdown={showCurrencyDropdown}
-            setShowCurrencyDropdown={setShowCurrencyDropdown}
-            handleFormSubmit={handleFormSubmit}
-            handleCopyStoreUrl={handleCopyStoreUrl}
-            handleEditStore={handleEditStore}
-            handleEditProduct={handleEditProduct}
-            handleDeleteProduct={handleDeleteProduct}
-            setIsSubmitting={setIsSubmitting}
-            setStores={(stores) => setUserProfile({ ...userProfile!, stores })}
+            fetchUserProfile={fetchUserProfile}
             addNotification={addNotification}
           />
         );
       case 'settings':
-        return <RenderSettings isLoading={isLoading} userProfile={userProfile} />;
+        return <RenderSettings isLoading={isLoading}/>;
+
       case 'analytics': {
         const combinedAnalytics = (userProfile?.stores || []).reduce<Analytics>(
           (acc, store) => {
@@ -494,7 +310,7 @@ const handleCopyStoreUrl = (slug: string) => {
             navItems={navItems}
           />
           <main className="flex-1 p-3 max-w-6xl mx-auto lg:ml-64 relative">
-            <header className="bg-white shadow border-b mb-4 rounded-xl sticky top-2 z-10">
+            <header className="bg-white shadow border-b mb-4 rounded-xl w-full top-2 z-10">
               <div className="px-4 py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <div className="flex items-center gap-2">
                   <motion.button

@@ -42,6 +42,7 @@ export interface Product {
   discountPrice?: number;
   stockCount?: number;
   tags?: string[];
+  template?: string
 }
 
 // Profile for user, with stores to peruse

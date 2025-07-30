@@ -1,16 +1,17 @@
 import { motion } from 'framer-motion';
 import { Loader2, User, Mail, Clock, Camera, Crown, ArrowUpRight, Check, X } from 'lucide-react';
 import { FC } from 'react';
-import { UserProfile } from '@/app/dashboard/page';
+import { useAppStore } from '@/store/useAppStore';
+
 
 // Define interface for component props
 interface RenderSettingsProps {
   isLoading: boolean;
-  userProfile?: UserProfile;
 }
 
 // Define the RenderSettings component
-const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, userProfile }) => {
+const RenderSettings: FC<RenderSettingsProps> = ({ isLoading }) => {
+  const {  userProfile } = useAppStore()
   const isFreePlan = userProfile?.subscription?.plan?.toLowerCase() === 'free';
   const isPro = userProfile?.subscription?.plan?.toLowerCase() === 'pro';
 

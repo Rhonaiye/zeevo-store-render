@@ -97,10 +97,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           >
             <div className="flex flex-col h-full">
               {/* Header */}
-              <header className=" px-4 pb-4 border-b border-gray-100 flex justify-between items-center">
+              <header className="px-4 pb-4 border-b border-gray-100 flex justify-between items-center">
                 <div>
-                  <Image width={80} height={80} src={'/zeevo.png'} alt='Zeevo logo' className='w-[10vh]'/>
-                  <p className="text-sm font-medium text-gray-600">Your store builder</p>
+                  <Image width={80} height={80} src={'/zeevo.png'} alt='Zeevo logo' className='w-[12vh] sm:w-[10vh]'/>
+                  <p className="text-base sm:text-sm font-medium text-gray-600">Your store builder</p>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -109,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   className="p-2 text-gray-500 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors lg:hidden"
                   aria-label="Close sidebar"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-6 h-6 sm:w-5 sm:h-5" />
                 </motion.button>
               </header>
               
@@ -122,14 +122,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                         whileHover={{ scale: 1.01 }}
                         whileTap={{ scale: 0.99 }}
                         onClick={() => handleNavClick(item.id)}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                        className={`w-full flex items-center gap-3 px-3 py-3 sm:py-2.5 text-base sm:text-sm font-medium rounded-lg transition-all ${
                           activeSection === item.id
                             ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-600 shadow-sm'
                             : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700'
                         }`}
                         aria-current={activeSection === item.id ? 'page' : undefined}
                       >
-                        <item.icon className="w-4 h-4 flex-shrink-0" />
+                        <item.icon className="w-5 h-5 sm:w-4 sm:h-4 flex-shrink-0" />
                         <span>{item.name}</span>
                       </motion.button>
                     </li>
@@ -142,15 +142,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div className="p-4 border-t border-gray-100 bg-gray-50/50">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                      <div className="text-sm sm:text-xs font-medium text-gray-600 uppercase tracking-wide">
                         Your Store
                       </div>
-                      <div className="text-sm font-semibold text-gray-900">
+                      <div className="text-base sm:text-sm font-semibold text-gray-900">
                         {userProfile?.stores?.length || 0}/1 store
                       </div>
                     </div>
-                    <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center">
-                      <Store className="w-4 h-4" />
+                    <div className="w-10 h-10 sm:w-8 sm:h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center">
+                      <Store className="w-5 h-5 sm:w-4 sm:h-4" />
                     </div>
                   </div>
                 </div>
@@ -162,9 +162,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={handleLogout}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-3 sm:py-2 text-base sm:text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-5 h-5 sm:w-4 sm:h-4" />
                   <span>Logout</span>
                 </motion.button>
               </footer>

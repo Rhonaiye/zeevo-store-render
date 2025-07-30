@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ShoppingBag, Star, Heart, Search, Menu, X, Plus, Minus, ArrowRight } from 'lucide-react';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
+import { Store } from '@/store/useAppStore';
 
 interface CartItem {
   _id: string;
@@ -29,16 +30,6 @@ interface Product {
   features?: string[];
 }
 
-interface Store {
-  name: string;
-  slug: string;
-  description?: string;
-  logo?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
-  currency?: string;
-  products?: Product[];
-}
 
 interface ModernStoreTemplateProps {
   store: Store;
@@ -440,24 +431,15 @@ const ModernStoreTemplate: React.FC<ModernStoreTemplateProps> = ({ store, isPrev
                 className="group bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200"
               >
                 <div className="relative aspect-square overflow-hidden bg-gray-100">
-                  <img
-                    src={product.imageUrl || '/fallback-image.jpg'}
+                  {product.images ? (
+                     <img
+                    src={product.images[0] || '/fallback-image.jpg'}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
+                  ): ('')}
 
-                  <div className="absolute top-1.5 sm:top-2 left-1.5 sm:left-2 flex gap-1">
-                    {product.isNew && (
-                      <span className="px-1.5 py-0.5 bg-green-500 text-white text-xs font-medium rounded-full">
-                        NEW
-                      </span>
-                    )}
-                    {product.isSale && (
-                      <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs font-medium rounded-full">
-                        SALE
-                      </span>
-                    )}
-                  </div>
+             
 
                   <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 flex gap-1">
                     <button
@@ -498,12 +480,7 @@ const ModernStoreTemplate: React.FC<ModernStoreTemplateProps> = ({ store, isPrev
                         </span>
                       )}
                     </div>
-                    {product.rating && (
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium text-gray-700">{product.rating}</span>
-                      </div>
-                    )}
+                    
                   </div>
                 </div>
               </Link>
