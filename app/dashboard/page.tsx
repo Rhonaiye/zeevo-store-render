@@ -1,11 +1,12 @@
 'use client';
+
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { motion } from 'framer-motion';
 import {
-  Home, Store, Settings,Plus, Edit3, Eye, BarChart3, Loader2,  Package, Menu,
-  CheckCircle, Clock
+  Home, Store, Settings, Plus, Edit3, Eye, BarChart3, Loader2, Package, Menu,
+  CheckCircle, Clock, ShoppingCart
 } from 'lucide-react';
 import Image from 'next/image';
 import RenderDashboard from '@/components/layout/dashboard';
@@ -16,19 +17,14 @@ import StoreAnalytics from '@/components/layout/storeAnalytics';
 import Notification from '@/components/ui/notification';
 import Sidebar from '@/components/ui/sideBar';
 import { useAppStore, Analytics, Product, UserProfile, NavItem, ActionCard, QuickStat, FormData, ProductFormData, NotificationData, Store as IStore } from '@/store/useAppStore';
+import OrdersManagement from '@/components/layout/ordersManagement';
 
-// Main Dashboard Component
-interface DashboardProps {
-  children?: React.ReactNode;
-}
-
-const Dashboard: React.FC<DashboardProps> = ({ children }) => {
+// Define the Dashboard component without props
+const Dashboard: React.FC = () => {
   const { userProfile, setUserProfile } = useAppStore();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const router = useRouter();
@@ -38,7 +34,6 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
       setIsSidebarOpen(window.innerWidth >= 1024);
     }
   }, []);
-
 
   const addNotification = (message: string, type: 'success' | 'error', duration = 5000) => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -53,8 +48,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
 
   const closeNotification = (id: string) => {
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isOpen: false } : n
-      ))
+      prev.map((n) => (n.id === id ? { ...n, isOpen: false } : n))
     );
     setTimeout(() => {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
@@ -70,35 +64,41 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
     }
   };
 
-const fetchUserProfile = async (): Promise<UserProfile | null> => {
-  const token = Cookies.get('token');
-  if (!token) {
-    addNotification('Auth error, no code to steer', 'error');
-    return null;
-  }
-
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/profile`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Profile fetch, no road clear');
+  const fetchUserProfile = async (): Promise<UserProfile | null> => {
+    const token = Cookies.get('token');
+    if (!token) {
+      addNotification('Authentication error: No token found. Please log in.', 'error');
+      setTimeout(() => router.push('/auth/login'), 2000);
+      return null;
     }
 
-    const { data } = await response.json();
-    console.log(data);
-    return data as UserProfile;
-  } catch (error) {
-    const err = error as Error;
-    addNotification(`Error fetching profile: ${err.message}`, 'error');
-    console.error('Error fetching user profile:', err);
-    return null;
-  }
-};
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/profile`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          addNotification('Session expired. Please log in again.', 'error');
+          Cookies.remove('token');
+          setTimeout(() => router.push('/auth/login'), 2000);
+          return null;
+        }
+        throw new Error('Profile fetch failed');
+      }
+
+      const { data } = await response.json();
+      return data as UserProfile;
+    } catch (error) {
+      const err = error as Error;
+      addNotification(`Error fetching profile: ${err.message}`, 'error');
+      console.error('Error fetching user profile:', err);
+      return null;
+    }
+  };
 
   const handleRetry = async () => {
     setIsLoading(true);
@@ -131,6 +131,7 @@ const fetchUserProfile = async (): Promise<UserProfile | null> => {
     { id: 'dashboard', name: 'Dashboard', icon: Home },
     { id: 'store', name: 'My Store', icon: Store },
     { id: 'products', name: 'Products', icon: Package },
+    { id: 'orders', name: 'Orders', icon: ShoppingCart },
     { id: 'analytics', name: 'Analytics', icon: BarChart3 },
     { id: 'settings', name: 'Settings', icon: Settings },
   ];
@@ -167,12 +168,6 @@ const fetchUserProfile = async (): Promise<UserProfile | null> => {
       setActiveSection('store');
     }
   };
-
-
-
-
-
-
 
   const getStatusIcon = (status: string) => {
     return status === 'completed' ? <CheckCircle className="w-4 h-4 text-green-500" /> :
@@ -212,6 +207,10 @@ const fetchUserProfile = async (): Promise<UserProfile | null> => {
         return (
           <RenderProductsManagement addNotification={addNotification} fetchUserProfile={fetchUserProfile}/>
         );
+      case 'orders':
+        return (
+          <OrdersManagement/>
+        );
       case 'store':
         return (
           <RenderStoreManagement
@@ -220,8 +219,7 @@ const fetchUserProfile = async (): Promise<UserProfile | null> => {
           />
         );
       case 'settings':
-        return <RenderSettings isLoading={isLoading}/>;
-
+        return <RenderSettings isLoading={isLoading} addNotification={addNotification}/>;
       case 'analytics': {
         const combinedAnalytics = (userProfile?.stores || []).reduce<Analytics>(
           (acc, store) => {
@@ -284,19 +282,29 @@ const fetchUserProfile = async (): Promise<UserProfile | null> => {
         >
           <h2 className="text-lg font-bold text-red-600">Error</h2>
           <p className="text-sm text-gray-700 mt-2">
-            An error occurred while loading your profile. Please try again or contact support at{' '}
+            Unable to load your profile. Please try again or log in again. Contact support at{' '}
             <a href="mailto:support@storesaas.com" className="text-indigo-600 hover:underline">
               support@storesaas.com
-            </a>.
+            </a> if the issue persists.
           </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleRetry}
-            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            Retry
-          </motion.button>
+          <div className="mt-4 flex gap-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleRetry}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Retry
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => router.push('/login')}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              Go to Login
+            </motion.button>
+          </div>
         </motion.div>
       ) : (
         <div className="flex w-full min-h-screen">
@@ -333,6 +341,7 @@ const fetchUserProfile = async (): Promise<UserProfile | null> => {
                        activeSection === 'store' ? 'Manage Store' :
                        activeSection === 'analytics' ? 'Manage Analytics' :
                        activeSection === 'products' ? 'Manage Products' :
+                       activeSection === 'orders' ? 'Manage Orders' :
                        'Settings'}
                     </h1>
                     <p className="text-xs sm:text-sm font-semibold text-gray-800">
@@ -340,6 +349,7 @@ const fetchUserProfile = async (): Promise<UserProfile | null> => {
                        activeSection === 'store' ? 'Manage settings, products' :
                        activeSection === 'analytics' ? 'View Store Analytics' :
                        activeSection === 'products' ? 'Manage your products' :
+                       activeSection === 'orders' ? 'Manage your orders' :
                        'Customize preferences'}
                     </p>
                   </div>
@@ -348,11 +358,10 @@ const fetchUserProfile = async (): Promise<UserProfile | null> => {
                   <p className="font-semibold text-gray-800 hidden sm:block">
                     {userProfile?.email || 'N/A'}
                   </p>
-                 
                 </div>
               </div>
             </header>
-            {children || renderContent()}
+            {renderContent()}
             <div className="space-y-2">
               {notifications.map((notification) => (
                 <Notification
@@ -372,4 +381,5 @@ const fetchUserProfile = async (): Promise<UserProfile | null> => {
   );
 };
 
+// Export the Dashboard component as the default export
 export default Dashboard;

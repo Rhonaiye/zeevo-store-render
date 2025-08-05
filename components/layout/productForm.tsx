@@ -3,6 +3,19 @@ import { Save, Loader2, X, Upload, Image as ImageIcon, Plus, Info } from 'lucide
 import React from 'react';
 import { ProductFormData } from '@/store/useAppStore';
 
+// Props interface for ProductForm component
+interface ProductFormProps {
+  storeId: string;
+  isEdit: boolean;
+  storeSlug: string;
+  productFormData: ProductFormData;
+  setProductFormData: React.Dispatch<React.SetStateAction<ProductFormData>>;
+  setShowProductForm: React.Dispatch<React.SetStateAction<boolean>>;
+  setEditingProductId: React.Dispatch<React.SetStateAction<string | null>>;
+  handleAddProduct: (e: React.FormEvent, storeId: string, isEdit: boolean, storeSlug: string) => Promise<void>;
+  isSubmitting: boolean;
+}
+
 // Price formatting utility
 const formatPrice = (price: number): string => {
   if (isNaN(price) || price === 0) return '';
@@ -18,17 +31,17 @@ const parsePrice = (value: string): number => {
   return parseFloat(numericValue) || 0;
 };
 
-export const renderProductForm = (
-  storeId: string,
-  isEdit: boolean,
-  storeSlug: string,
-  productFormData: ProductFormData,
-  setProductFormData: React.Dispatch<React.SetStateAction<ProductFormData>>,
-  setShowProductForm: React.Dispatch<React.SetStateAction<boolean>>,
-  setEditingProductId: React.Dispatch<React.SetStateAction<string | null>>,
-  handleAddProduct: (e: React.FormEvent, storeId: string, isEdit: boolean, storeSlug: string) => Promise<void>,
-  isSubmitting: boolean
-) => {
+const ProductForm: React.FC<ProductFormProps> = ({
+  storeId,
+  isEdit,
+  storeSlug,
+  productFormData,
+  setProductFormData,
+  setShowProductForm,
+  setEditingProductId,
+  handleAddProduct,
+  isSubmitting,
+}) => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const imageFiles = files.filter(file => file.type.startsWith('image/'));
@@ -417,3 +430,5 @@ export const renderProductForm = (
     </motion.div>
   );
 };
+
+export default ProductForm;

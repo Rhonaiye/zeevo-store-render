@@ -1,19 +1,71 @@
+'use client';
 import { motion } from 'framer-motion';
 import { Loader2, User, Mail, Clock, Camera, Crown, ArrowUpRight, Check, X } from 'lucide-react';
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-
+import Cookies from 'js-cookie'; // Import js-cookie
 
 // Define interface for component props
 interface RenderSettingsProps {
   isLoading: boolean;
+  addNotification?: (message: string, type: 'success' | 'error', duration?: number) => void; // Optional, for notifications
 }
 
 // Define the RenderSettings component
-const RenderSettings: FC<RenderSettingsProps> = ({ isLoading }) => {
-  const {  userProfile } = useAppStore()
+const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification }) => {
+  const { userProfile } = useAppStore();
+  const [isUpgrading, setIsUpgrading] = useState(false); // Track upgrade request state
   const isFreePlan = userProfile?.subscription?.plan?.toLowerCase() === 'free';
   const isPro = userProfile?.subscription?.plan?.toLowerCase() === 'pro';
+
+  // Handle Upgrade to Pro button click
+  const handleUpgrade = async () => {
+    if (!addNotification) {
+      console.error('Notification function not provided');
+      return;
+    }
+
+    const token = Cookies.get('token'); // Retrieve token using js-cookie
+    if (!token) {
+      addNotification('Authentication error: No token found', 'error');
+      return;
+    }
+
+    setIsUpgrading(true);
+    try {
+      // Make a POST request to your backend to create a payment session
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/subscribe/pro`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          plan: 'pro', // Specify the plan to upgrade to
+          successUrl: `${window.location.origin}/dashboard?upgrade=success`, // Redirect URL after successful payment
+          cancelUrl: `${window.location.origin}/dashboard?upgrade=canceled`, // Redirect URL if user cancels
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create payment session');
+      }
+
+      const { paymentUrl } = await response.json(); // Expecting { paymentUrl: string } from backend
+      if (paymentUrl) {
+        // Redirect user to the payment link
+        window.location.href = paymentUrl;
+      } else {
+        throw new Error('No payment URL received');
+      }
+    } catch (error) {
+      const err = error as Error;
+      addNotification(`Failed to initiate upgrade: ${err.message}`, 'error');
+      console.error('Error creating payment session:', err);
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6">
@@ -21,7 +73,7 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading }) => {
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Account Settings</h2>
         <p className="text-xs text-gray-500 mt-1">Manage your account information and preferences</p>
       </div>
-      
+
       {isLoading ? (
         <div className="flex flex-col justify-center items-center h-48 sm:h-64">
           <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 animate-spin mb-3" />
@@ -30,16 +82,20 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading }) => {
       ) : (
         <div className="space-y-4 sm:space-y-6">
           {/* Subscription Plan Section */}
-          <div className={`p-3 sm:p-4 rounded-lg border-2 ${
-            isFreePlan 
-              ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200' 
-              : 'bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-200'
-          }`}>
+          <div
+            className={`p-3 sm:p-4 rounded-lg border-2 ${
+              isFreePlan
+                ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200'
+                : 'bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-200'
+            }`}
+          >
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0">
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  isFreePlan ? 'bg-amber-100' : 'bg-indigo-100'
-                }`}>
+                <div
+                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    isFreePlan ? 'bg-amber-100' : 'bg-indigo-100'
+                  }`}
+                >
                   {isPro ? (
                     <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
                   ) : (
@@ -51,32 +107,41 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading }) => {
                     <h3 className="text-sm font-semibold text-gray-900">
                       {userProfile?.subscription?.plan || 'Free'} Plan
                     </h3>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                      userProfile?.subscription?.status === 'active' 
-                        ? 'bg-green-100 text-green-700' 
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        userProfile?.subscription?.status === 'active'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
                       {userProfile?.subscription?.status || 'Active'}
                     </span>
                   </div>
                   <p className="text-xs text-gray-600 mt-1">
-                    {isFreePlan 
+                    {isFreePlan
                       ? 'Limited features available. Upgrade to unlock more!'
-                      : 'Enjoy premium features and priority support'
-                    }
+                      : 'Enjoy premium features and priority support'}
                   </p>
                 </div>
               </div>
-              
+
               {isFreePlan && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:from-indigo-700 hover:to-blue-700 font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg w-full sm:w-auto"
+                  onClick={handleUpgrade}
+                  disabled={isUpgrading}
+                  className={`bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:from-indigo-700 hover:to-blue-700 font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg w-full sm:w-auto ${
+                    isUpgrading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
-                  <Crown className="w-4 h-4" />
-                  <span className="whitespace-nowrap">Upgrade to Pro</span>
-                  <ArrowUpRight className="w-3 h-3" />
+                  {isUpgrading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Crown className="w-4 h-4" />
+                  )}
+                  <span className="whitespace-nowrap">{isUpgrading ? 'Processing...' : 'Upgrade to Pro'}</span>
+                  {!isUpgrading && <ArrowUpRight className="w-3 h-3" />}
                 </motion.button>
               )}
             </div>
@@ -128,10 +193,10 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading }) => {
           {userProfile?.avatar && (
             <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
               <div className="relative flex-shrink-0">
-                <img 
-                  src={userProfile.avatar} 
-                  alt="Profile" 
-                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-white shadow-sm" 
+                <img
+                  src={userProfile.avatar}
+                  alt="Profile"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-white shadow-sm"
                 />
                 <button className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-gray-900 text-white rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors duration-200">
                   <Camera className="w-2.5 h-2.5 sm:w-3 sm:h-3" />

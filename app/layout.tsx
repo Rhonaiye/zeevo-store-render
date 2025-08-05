@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Montserrat, Nunito, Inter, Jost, Saira } from "next/font/google";
+import { Geist, Geist_Mono, Montserrat, Nunito, Inter, Jost, Saira, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,6 +19,12 @@ const MontserratFont = Montserrat({
   display: 'swap', // Optional, improves performance
 });
 
+const BricolageFont = Bricolage_Grotesque({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'], // Add the weights you want to use
+  display: 'swap', // Optional but recommended for better UX
+  variable: '--font-bricolage', // Optional: enables usage with CSS variables
+});
 
 const JostFont = Jost({
   subsets: ['latin'],
@@ -58,7 +64,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${MontserratFont.variable} ${NunitoSans.variable} ${InterFont.variable} ${JostFont.variable} ${SairaFont.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${MontserratFont.variable} ${NunitoSans.variable} ${InterFont.variable} ${JostFont.variable} ${SairaFont.variable} ${BricolageFont.variable} antialiased`}
       >
         {children}
       </body>

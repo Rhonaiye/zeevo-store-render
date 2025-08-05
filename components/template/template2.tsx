@@ -116,6 +116,7 @@ const SleekStoreTemplate: React.FC<SleekStoreTemplateProps> = ({ store, isPrevie
         _id: product._id,
         name: product.name,
         price: product.price,
+        // @ts-ignore
         image: product.images[0]|| '/fallback-image.jpg',
         quantity: 1,
       }];

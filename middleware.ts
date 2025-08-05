@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const PUBLIC_FILE = /\.(.*)$/;
-const MAIN_DOMAINS = ['toolie.app', 'www.toolie.app', 'localhost:3001', '127.0.0.1:3001', '172.20.10.14:3001'];
+const MAIN_DOMAINS = ['zeevo.shop', 'www.zeevo.shop', 'localhost:3001', '127.0.0.1:3001', '172.20.10.14:3001'];
 
 export function middleware(req: NextRequest) {
   const hostname = req.headers.get('host') || '';
@@ -28,5 +28,6 @@ export function middleware(req: NextRequest) {
 
   // 👉 Preserve the pathname!
   url.pathname = `/store/${subdomain}${pathname}`;
+  console.log(url)
   return NextResponse.rewrite(url);
 }

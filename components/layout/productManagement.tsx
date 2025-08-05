@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit3, Trash2, Package, Search, Star, TrendingUp } from 'lucide-react';
 import { Store, ProductFormData, Product, useAppStore, UserProfile } from '@/store/useAppStore';
-import { renderProductForm } from './productForm';
+import ProductForm from './productForm';
 import Cookies from 'js-cookie';
 
 // Props interface for RenderProducts component
@@ -99,13 +99,14 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({ addNotificati
       }
 
       const endpoint = isEdit
-        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/store/${storeId}/products/${editingProductId}`
+        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/product/edit/${editingProductId}`
         : `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/product/create/${storeSlug}`;
 
       const response = await fetch(endpoint, {
         method: isEdit ? 'PUT' : 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
+          // Let the browser set the Content-Type for FormData to include the boundary
         },
         body: formData,
       });
@@ -167,7 +168,7 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({ addNotificati
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/store/${storeId}/products/${productId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/product/delete/${productId}`,
         {
           method: 'DELETE',
           headers: {
@@ -176,7 +177,11 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({ addNotificati
         }
       );
 
-      if (!response.ok) throw new Error('Failed to delete product');
+      
+      if (!response.ok){
+        console.log(await response.json())
+        throw new Error('Failed to delete product')
+      };
 
       // Fetch updated user profile
       await fetchUserProfile();
@@ -317,17 +322,17 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({ addNotificati
             className="mb-4"
           >
             <div className="overflow-hidden">
-              {renderProductForm(
-                store._id,
-                !!editingProductId,
-                store.slug,
-                productFormData,
-                setProductFormData,
-                setShowProductForm,
-                setEditingProductId,
-                handleAddProduct,
-                isSubmitting
-              )}
+              <ProductForm
+                storeId={store._id}
+                isEdit={!!editingProductId}
+                storeSlug={store.slug}
+                productFormData={productFormData}
+                setProductFormData={setProductFormData}
+                setShowProductForm={setShowProductForm}
+                setEditingProductId={setEditingProductId}
+                handleAddProduct={handleAddProduct}
+                isSubmitting={isSubmitting}
+              />
             </div>
           </motion.div>
         )}

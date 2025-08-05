@@ -1,49 +1,65 @@
+
 'use client';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Link, Trash2, Store, Palette, Mail, Package, ChevronDown, Instagram, Facebook, Twitter, Edit3, Eye, Globe, X, Layout, Type } from 'lucide-react';
+import { Plus, Link, Trash2, Palette, ShoppingBag , Mail, Package, ChevronDown, Instagram, Facebook, Twitter, Edit3, Eye, Globe, X, Layout, Type, FileText, Truck, Store as StoreIcon } from 'lucide-react';
 import Cookies from 'js-cookie';
 import DeleteStoreConfirmation from '../ui/deleteStore';
 import StoreForm from './storeForm';
-import ModernStoreTemplate from '../template/page';
+import ModernStoreTemplate from '@/components/template/modernStore';
 import CustomDropdown from '../ui/dropDown';
 import SleekStoreTemplate from '../template/template2';
-import { useAppStore, UserProfile } from '@/store/useAppStore';
+import { useAppStore, UserProfile, Product, Store } from '@/store/useAppStore';
+import { CreateStoreBody } from '@/store/useAppStore';
 
 // Interfaces
-interface Store {
-  _id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  logo?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
-  currency: string;
-  products?: Product[];
-  template?: string;
-  font?: string;
-  socialLinks?: { instagram?: string; facebook?: string; twitter?: string; tiktok?: string };
-  contact?: { email?: string; phone?: string; address?: string };
-  isPublished?: boolean;
-  createdAt: string;
-  domain?: string;
+interface SocialLinks {
+  instagram?: string;
+  facebook?: string;
+  twitter?: string;
+  tiktok?: string;
 }
 
-interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  description?: string;
-  isAvailable?: boolean;
+interface Contact {
+  email?: string;
+  phone?: string;
+  address?: string;
 }
+
+interface ShippingLocation {
+  area: string;
+  fee: number;
+  note?: string;
+}
+
+interface Shipping {
+  enabled: boolean;
+  locations: ShippingLocation[];
+}
+
+interface Pickup {
+  enabled: boolean;
+  note?: string;
+}
+
+interface Policies {
+  returns?: string;
+  terms?: string;
+}
+
+
 
 interface RenderStoreManagementProps {
   addNotification: (message: string, type: 'success' | 'error') => void;
   fetchUserProfile: () => Promise<UserProfile | null>;
 }
 
-const ColorSelector = ({ color, label }: { color?: string; label: string }) => (
+interface ColorSelectorProps {
+  color?: string;
+  label: string;
+}
+
+const ColorSelector: React.FC<ColorSelectorProps> = ({ color, label }) => (
   <div className="space-y-2">
     <label className="text-sm font-medium text-gray-700">{label}</label>
     <div className="flex items-center gap-3">
@@ -61,25 +77,31 @@ const ColorSelector = ({ color, label }: { color?: string; label: string }) => (
 
 const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotification, fetchUserProfile }) => {
   const { userProfile, setUserProfile } = useAppStore();
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showEditForm, setShowEditForm] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
+  const [showEditForm, setShowEditForm] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<boolean>(false);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [showVisibilityConfirmation, setShowVisibilityConfirmation] = useState(false);
+  const [showTooltip, setShowTooltip] = useState<boolean>(false);
+  const [showVisibilityConfirmation, setShowVisibilityConfirmation] = useState<boolean>(false);
   const [pendingVisibilityState, setPendingVisibilityState] = useState<boolean | null>(null);
-  const [customDomain, setCustomDomain] = useState('');
+  const [customDomain, setCustomDomain] = useState<string>('');
   const [showPreviewModal, setShowPreviewModal] = useState<Store | null>(null);
   const [appearanceSettings, setAppearanceSettings] = useState<{ template: string; font: string } | null>(null);
+  const [showUpgradeOverlay, setShowUpgradeOverlay] = useState<boolean>(false);
 
-  const templateOptions = [
+  interface DropdownOption {
+    value: string;
+    label: string;
+  }
+
+  const templateOptions: DropdownOption[] = [
     { value: 'modern', label: 'Modern' },
     { value: 'sleek', label: 'Sleek' },
   ];
 
-  const fontOptions = [
+  const fontOptions: DropdownOption[] = [
     { value: 'Inter', label: 'Inter' },
     { value: 'Jost', label: 'Jost' },
     { value: 'Geist', label: 'Geist' },
@@ -88,7 +110,7 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
     { value: 'Saira', label: 'Saira' },
   ];
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateStoreBody>({
     name: '',
     slug: '',
     description: '',
@@ -100,18 +122,20 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
     font: 'Inter',
     socialLinks: { instagram: '', facebook: '', twitter: '', tiktok: '' },
     contact: { email: '', phone: '', address: '' },
+    shipping: { enabled: false, locations: [] },
+    pickup: { enabled: false, note: '' },
+    policies: { returns: '', terms: '' },
   });
 
-  // Initialize store and ensure store ID is available
   const store = userProfile?.stores?.[0] || null;
 
   useEffect(() => {
     if (store && !selectedStore) {
-      setSelectedStore(store); // Set selectedStore to the first store on mount
+      setSelectedStore(store);
     }
   }, [store, selectedStore]);
 
-  const handleFormSubmit = async (e: React.FormEvent, isEdit: boolean) => {
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>, isEdit: boolean) => {
     e.preventDefault();
     const token = Cookies.get('token');
     if (!token) {
@@ -137,7 +161,7 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
       const updatedProfile = await fetchUserProfile();
       if (updatedProfile) {
         setUserProfile(updatedProfile);
-        setSelectedStore(updatedProfile.stores?.[0] || null); // Update selectedStore after creation/update
+        setSelectedStore(updatedProfile.stores?.[0] || null);
       }
       setShowCreateForm(false);
       setShowEditForm(false);
@@ -153,9 +177,12 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
         font: 'Inter',
         socialLinks: { instagram: '', facebook: '', twitter: '', tiktok: '' },
         contact: { email: '', phone: '', address: '' },
+        shipping: { enabled: false, locations: [] },
+        pickup: { enabled: false, note: '' },
+        policies: { returns: '', terms: '' },
       });
       addNotification(`Store ${isEdit ? 'updated' : 'created'} successfully`, 'success');
-    } catch (error) {
+    } catch (error: unknown) {
       addNotification(`Error: ${(error as Error).message}`, 'error');
     } finally {
       setIsSubmitting(false);
@@ -185,40 +212,34 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
         phone: store.contact?.phone || '',
         address: store.contact?.address || '',
       },
+      shipping: store.shipping || { enabled: false, locations: [] },
+      pickup: store.pickup || { enabled: false, note: '' },
+      policies: store.policies || { returns: '', terms: '' },
     });
     setShowEditForm(true);
   };
 
-    const handleCopyFallback = (text: string) => {
-  const input = document.createElement('input');
-  input.value = text;
-  document.body.appendChild(input);
-  input.select();
-  document.execCommand('copy');
-  document.body.removeChild(input);
-  addNotification('Copied using fallback', 'success');
-};
-
-
-const handleCopyStoreUrl = (slug: string) => {
-  const url = `http://${slug}.172.20.10.14.nip.io:3001/`;
-
-  if (navigator?.clipboard?.writeText) {
-    navigator.clipboard.writeText(url)
-      .then(() => addNotification('Store URL copied', 'success'))
-      .catch(() => addNotification('Copy failed', 'error'));
-  } else {
-    // fallback method for HTTP or unsupported browsers
+  const handleCopyFallback = (text: string) => {
     const input = document.createElement('input');
-    input.value = url;
+    input.value = text;
     document.body.appendChild(input);
     input.select();
     document.execCommand('copy');
     document.body.removeChild(input);
-    addNotification('Store url copied', 'success');
-  }
-};
+    addNotification('Copied using fallback', 'success');
+  };
 
+  const handleCopyStoreUrl = (slug: string) => {
+    const url = `http://${slug}.172.20.10.14.nip.io:3001/`;
+
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(url)
+        .then(() => addNotification('Store URL copied', 'success'))
+        .catch(() => addNotification('Copy failed', 'error'));
+    } else {
+      handleCopyFallback(url);
+    }
+  };
 
   const handleDeleteStore = async () => {
     const token = Cookies.get('token');
@@ -236,18 +257,16 @@ const handleCopyStoreUrl = (slug: string) => {
       const updatedProfile = await fetchUserProfile();
       if (updatedProfile) {
         setUserProfile(updatedProfile);
-        setSelectedStore(null); // Clear selected store after deletion
+        setSelectedStore(null);
       }
       addNotification('Store deleted successfully', 'success');
-    } catch (error) {
+    } catch (error: unknown) {
       addNotification(`Error: ${(error as Error).message}`, 'error');
     } finally {
       setIsSubmitting(false);
       setShowDeleteConfirmation(false);
     }
   };
-
-
 
   const retryFetch = async (url: string, options: RequestInit, retries: number = 3, delay: number = 1000): Promise<Response> => {
     for (let i = 0; i < retries; i++) {
@@ -261,7 +280,7 @@ const handleCopyStoreUrl = (slug: string) => {
           continue;
         }
         throw new Error(`HTTP ${response.status}`);
-      } catch (error) {
+      } catch (error: unknown) {
         if (i === retries - 1) throw error;
       }
     }
@@ -300,7 +319,7 @@ const handleCopyStoreUrl = (slug: string) => {
       }
       addNotification('Custom domain added successfully', 'success');
       setCustomDomain('');
-    } catch (error) {
+    } catch (error: unknown) {
       addNotification(`Error: ${(error as Error).message}`, 'error');
     } finally {
       setIsSubmitting(false);
@@ -335,7 +354,7 @@ const handleCopyStoreUrl = (slug: string) => {
       }
       addNotification('Appearance settings updated successfully', 'success');
       setAppearanceSettings(null);
-    } catch (error) {
+    } catch (error: unknown) {
       addNotification(`Error: ${(error as Error).message}`, 'error');
     } finally {
       setIsSubmitting(false);
@@ -348,6 +367,7 @@ const handleCopyStoreUrl = (slug: string) => {
       addNotification('Authentication error or no store selected. Please try again.', 'error');
       return;
     }
+
     try {
       setIsSubmitting(true);
       const response = await retryFetch(
@@ -360,19 +380,20 @@ const handleCopyStoreUrl = (slug: string) => {
           },
         }
       );
-      if (response.status === 450 || (response.status === 403 && (await response.json()).code === 'UPGRADE_REQUIRED')) {
-        addNotification('Upgrade to Pro to toggle store visibility.', 'error');
-        return;
-      }
+
       if (!response.ok) throw new Error('Failed to toggle visibility');
       const updatedProfile = await fetchUserProfile();
       if (updatedProfile) {
         setUserProfile(updatedProfile);
         setSelectedStore(updatedProfile.stores?.[0] || null);
       }
-      addNotification(`Store has been ${!currentStatus ? 'published' : 'hidden'} successfully.`, 'success');
-    } catch (error) {
-      addNotification(`Error: ${(error as Error).message}`, 'error');
+
+      addNotification(
+        `Store has been ${!currentStatus ? 'published' : 'hidden'} successfully.`,
+        'success'
+      );
+    } catch (error: unknown) {
+      setShowUpgradeOverlay(true);
     } finally {
       setIsSubmitting(false);
       setShowVisibilityConfirmation(false);
@@ -391,7 +412,7 @@ const handleCopyStoreUrl = (slug: string) => {
 
   const confirmVisibilityToggle = () => {
     if (pendingVisibilityState !== null && selectedStore?._id) {
-      handleToggleStoreVisibility(store?.isPublished || false);
+      handleToggleStoreVisibility(store?.isPublished ?? false);
     }
   };
 
@@ -410,10 +431,8 @@ const handleCopyStoreUrl = (slug: string) => {
             setFormData={setFormData}
             setShowCreateForm={setShowCreateForm}
             setShowEditForm={setShowEditForm}
-            setEditingStoreId={() => setSelectedStore(null)}
+            setEditingStoreId={(id: string | null) => setSelectedStore(null)}
             handleFormSubmit={handleFormSubmit}
-            showCurrencyDropdown={false}
-            setShowCurrencyDropdown={() => {}}
             isSubmitting={isSubmitting}
           />
         </motion.div>
@@ -429,7 +448,7 @@ const handleCopyStoreUrl = (slug: string) => {
         className="max-w-md mx-auto text-center py-16 bg-white rounded-2xl shadow-lg"
       >
         <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Store className="w-8 h-8 text-white" />
+          <ShoppingBag height={16} width={16}/>
         </div>
         <h3 className="text-xl font-bold text-gray-900 mb-2">Create Your Store</h3>
         <p className="text-sm text-gray-600 mb-6 leading-relaxed">Start selling online by creating your store today.</p>
@@ -457,9 +476,9 @@ const handleCopyStoreUrl = (slug: string) => {
         <div className="flex items-center gap-4">
           <div
             className="w-12 h-12 rounded-full flex items-center justify-center shadow-md"
-            style={{ background: `linear-gradient(135deg, ${store.primaryColor || '#6366F1'}, ${store.secondaryColor || '#8B5CF6'})` }}
+            style={{ background: `linear-gradient(135deg, ${store.primaryColor ?? '#6366F1'}, ${store.secondaryColor ?? '#8B5CF6'})` }}
           >
-            <Store className="w-6 h-6 text-white" />
+            <ShoppingBag height={16} width={16}/>
           </div>
           <div>
             <h2 className="text-2xl font-bold text-gray-900">{store.name}</h2>
@@ -495,7 +514,8 @@ const handleCopyStoreUrl = (slug: string) => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-50 rounded-xl p-4">
           <p className="text-xs font-medium text-gray-500 uppercase">Created</p>
-          <p className="text-sm font-semibold text-gray-900">{new Date(store.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+         <p className="text-sm font-semibold text-gray-900">{new Date(store.createdAt ?? new Date()).toLocaleDateString('en-US', {month: 'short',day: 'numeric',year: 'numeric'})}</p>
+
         </div>
         <div className="bg-gray-50 rounded-xl p-4">
           <p className="text-xs font-medium text-gray-500 uppercase">Currency</p>
@@ -503,7 +523,7 @@ const handleCopyStoreUrl = (slug: string) => {
         </div>
         <div className="bg-gray-50 rounded-xl p-4">
           <p className="text-xs font-medium text-gray-500 uppercase">Products</p>
-          <p className="text-sm font-semibold text-gray-900">{store.products?.length || 0}</p>
+          <p className="text-sm font-semibold text-gray-900">{store.products?.length ?? 0}</p>
         </div>
       </div>
 
@@ -512,8 +532,8 @@ const handleCopyStoreUrl = (slug: string) => {
         <label className="inline-flex items-center cursor-pointer">
           <input
             type="checkbox"
-            checked={store.isPublished}
-            onChange={() => handleToggleWithConfirmation(store.isPublished)}
+            checked={store.isPublished ?? false}
+            onChange={() => handleToggleWithConfirmation(store.isPublished ?? false)}
             disabled={isSubmitting}
             className="sr-only peer"
             onMouseEnter={() => setShowTooltip(true)}
@@ -543,9 +563,12 @@ const handleCopyStoreUrl = (slug: string) => {
       <div className="space-y-2">
         {[
           { key: 'appearance', icon: Layout, label: 'Appearance' },
+          { key: 'description', icon: FileText, label: 'Description' },
           { key: 'branding', icon: Palette, label: 'Branding' },
           { key: 'social', icon: Link, label: 'Social Links' },
           { key: 'contact', icon: Mail, label: 'Contact Info' },
+          { key: 'shipping_pickup', icon: Truck, label: 'Shipping & Pickup' },
+          { key: 'policies', icon: FileText, label: 'Policies' },
           { key: 'domain', icon: Globe, label: 'Custom Domain', hidden: !!store.domain },
           { key: 'products', icon: Package, label: 'Products' },
         ].map(({ key, icon: Icon, label, hidden }) => (
@@ -574,16 +597,16 @@ const handleCopyStoreUrl = (slug: string) => {
                       <div className="space-y-4">
                         <CustomDropdown
                           label="Template"
-                          value={appearanceSettings?.template || store.template || 'modern'}
+                          value={appearanceSettings?.template ?? store.template ?? 'modern'}
                           options={templateOptions}
-                          onChange={(value) => setAppearanceSettings({ template: value, font: appearanceSettings?.font || store.font || 'Inter' })}
+                          onChange={(value: string) => setAppearanceSettings({ template: value, font: appearanceSettings?.font ?? store.font ?? 'Inter' })}
                           disabled={isSubmitting}
                         />
                         <CustomDropdown
                           label="Font"
-                          value={appearanceSettings?.font || store.font || 'Inter'}
+                          value={appearanceSettings?.font ?? store.font ?? 'Inter'}
                           options={fontOptions}
-                          onChange={(value) => setAppearanceSettings({ template: appearanceSettings?.template || store.template || 'modern', font: value })}
+                          onChange={(value: string) => setAppearanceSettings({ template: appearanceSettings?.template ?? store.template ?? 'modern', font: value })}
                           disabled={isSubmitting}
                         />
                         <motion.button
@@ -597,32 +620,126 @@ const handleCopyStoreUrl = (slug: string) => {
                         </motion.button>
                       </div>
                     )}
+                    {key === 'description' && (
+                      <div className="space-y-3">
+                        {store.description ? (
+                          <p className="text-sm text-gray-900">{store.description}</p>
+                        ) : (
+                          <p className="text-sm text-gray-600">No description provided</p>
+                        )}
+                      </div>
+                    )}
                     {key === 'branding' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <ColorSelector color={store.primaryColor} label="Primary Color" />
-                        <ColorSelector color={store.secondaryColor} label="Secondary Color" />
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-700">Logo</label>
+                          {store.logo ? (
+                            <img
+                              src={store.logo}
+                              alt={`${store.name} logo`}
+                              className="w-24 h-24 object-contain rounded-lg border border-gray-200"
+                            />
+                          ) : (
+                            <p className="text-sm text-gray-600">No logo uploaded</p>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <ColorSelector color={store.primaryColor} label="Primary Color" />
+                          <ColorSelector color={store.secondaryColor} label="Secondary Color" />
+                        </div>
                       </div>
                     )}
                     {key === 'social' && (
                       <div className="space-y-3">
-                        {store.socialLinks && Object.entries(store.socialLinks).map(([platform, url]) => url && (
-                          <div key={platform} className="flex items-center gap-3">
-                            {platform === 'instagram' && <Instagram className="w-5 h-5 text-pink-600" />}
-                            {platform === 'facebook' && <Facebook className="w-5 h-5 text-blue-600" />}
-                            {platform === 'twitter' && <Twitter className="w-5 h-5 text-sky-600" />}
-                            <a href={url} className="text-sm text-indigo-600 hover:underline truncate" target="_blank" rel="noopener noreferrer">{url}</a>
-                          </div>
-                        )) || <p className="text-sm text-gray-600">No social links configured</p>}
+                        {store.socialLinks && Object.entries(store.socialLinks).some(([_, url]) => url) ? (
+                          Object.entries(store.socialLinks).map(([platform, url]) => url && (
+                            <div key={platform} className="flex items-center gap-3">
+                              {platform === 'instagram' && <Instagram className="w-5 h-5 text-pink-600" />}
+                              {platform === 'facebook' && <Facebook className="w-5 h-5 text-blue-600" />}
+                              {platform === 'twitter' && <Twitter className="w-5 h-5 text-sky-600" />}
+                              {platform === 'tiktok' && <StoreIcon className="w-5 h-5 text-gray-600" />}
+                              <a href={url} className="text-sm text-indigo-600 hover:underline truncate" target="_blank" rel="noopener noreferrer">{url}</a>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-600">No social links configured</p>
+                        )}
                       </div>
                     )}
                     {key === 'contact' && (
                       <div className="space-y-3">
-                        {store.contact && Object.entries(store.contact).map(([type, value]) => value && (
-                          <div key={type} className="flex items-center gap-3">
-                            <Mail className="w-5 h-5 text-gray-600" />
-                            <span className="text-sm text-gray-900 truncate">{value}</span>
-                          </div>
-                        )) || <p className="text-sm text-gray-600">No contact information</p>}
+                        {store.contact && Object.entries(store.contact).some(([_, value]) => value) ? (
+                          Object.entries(store.contact).map(([type, value]) => value && (
+                            <div key={type} className="flex items-center gap-3">
+                              <Mail className="w-5 h-5 text-gray-600" />
+                              <span className="text-sm text-gray-900 truncate">{value}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-600">No contact information</p>
+                        )}
+                      </div>
+                    )}
+                    {key === 'shipping_pickup' && (
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-900">Shipping</h4>
+                          {store.shipping?.enabled ? (
+                            store.shipping.locations.length > 0 ? (
+                              <div className="space-y-3 mt-2">
+                                {store.shipping.locations.map((location, index) => (
+                                  <div key={index} className="flex items-center gap-3">
+                                    <Truck className="w-5 h-5 text-gray-600" />
+                                    <div>
+                                      <p className="text-sm font-medium text-gray-900">{location.area}</p>
+                                      <p className="text-sm text-gray-600">Fee: {store.currency} {location.fee.toFixed(2)}</p>
+                                      {location.note && <p className="text-xs text-gray-500">{location.note}</p>}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-600 mt-2">Shipping enabled but no locations configured</p>
+                            )
+                          ) : (
+                            <p className="text-sm text-gray-600 mt-2">Shipping not enabled</p>
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-900">Pickup</h4>
+                          {store.pickup?.enabled ? (
+                            store.pickup.note ? (
+                              <div className="flex items-center gap-3 mt-2">
+                                <StoreIcon className="w-5 h-5 text-gray-600" />
+                                <p className="text-sm text-gray-900">{store.pickup.note}</p>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-600 mt-2">Pickup enabled but no note provided</p>
+                            )
+                          ) : (
+                            <p className="text-sm text-gray-600 mt-2">Pickup not enabled</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {key === 'policies' && (
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-900">Return Policy</h4>
+                          {store.policies?.returns ? (
+                            <p className="text-sm text-gray-900 mt-2">{store.policies.returns}</p>
+                          ) : (
+                            <p className="text-sm text-gray-600 mt-2">No return policy provided</p>
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-900">Terms of Service</h4>
+                          {store.policies?.terms ? (
+                            <p className="text-sm text-gray-900 mt-2">{store.policies.terms}</p>
+                          ) : (
+                            <p className="text-sm text-gray-600 mt-2">No terms of service provided</p>
+                          )}
+                        </div>
                       </div>
                     )}
                     {key === 'domain' && (
@@ -635,7 +752,7 @@ const handleCopyStoreUrl = (slug: string) => {
                           <input
                             type="text"
                             value={customDomain}
-                            onChange={(e) => setCustomDomain(e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomDomain(e.target.value)}
                             placeholder="example.com"
                             className="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             disabled={isSubmitting}
@@ -684,7 +801,7 @@ const handleCopyStoreUrl = (slug: string) => {
                             <p className="text-xs text-gray-600 mb-4">Add your first product to start selling.</p>
                             <motion.button
                               whileHover={{ scale: 1.02 }}
-                              onClick={() => console.log('Add product clicked')} // Placeholder for product form
+                              onClick={() => console.log('Add product clicked')}
                               className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 mx-auto"
                             >
                               <Plus className="w-4 h-4" />
@@ -760,6 +877,43 @@ const handleCopyStoreUrl = (slug: string) => {
         )}
       </AnimatePresence>
 
+      {/* Upgrade Plan Overlay */}
+      <AnimatePresence>
+        {showUpgradeOverlay && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          >
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-bold text-gray-900 mb-3">Upgrade Your Plan</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                To make your store public or private, please upgrade to a Pro plan. This will unlock store visibility toggling and other premium features.
+              </p>
+              <div className="flex gap-3">
+                <motion.a
+                  href="https://x.ai/grok"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.02 }}
+                  className="flex-1 bg-indigo-600 text-white py-2.5 rounded-full text-sm font-semibold text-center"
+                >
+                  View Plans
+                </motion.a>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => setShowUpgradeOverlay(false)}
+                  className="flex-1 bg-gray-200 text-gray-700 py-2.5 rounded-full text-sm font-semibold"
+                >
+                  Cancel
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Preview Modal */}
       <AnimatePresence>
         {showPreviewModal && (
@@ -785,10 +939,11 @@ const handleCopyStoreUrl = (slug: string) => {
                   <X className="w-6 h-6" />
                 </motion.button>
               </div>
-              <div className="flex-1 overflow-y-auto" style={{ fontFamily: `${showPreviewModal.font || 'Inter'}, sans-serif` }}>
+              <div className="flex-1 overflow-y-auto" style={{ fontFamily: `${showPreviewModal.font ?? 'Inter'}, sans-serif` }}>
                 {showPreviewModal.template === 'modern' ? (
                   <ModernStoreTemplate store={showPreviewModal} isPreview={true} />
                 ) : (
+                  // @ts-ignore
                   <SleekStoreTemplate store={showPreviewModal} />
                 )}
               </div>
@@ -799,7 +954,7 @@ const handleCopyStoreUrl = (slug: string) => {
 
       <DeleteStoreConfirmation
         isOpen={showDeleteConfirmation}
-        storeName={selectedStore?.name || ''}
+        storeName={selectedStore?.name ?? ''}
         onConfirm={handleDeleteStore}
         onCancel={() => {
           setShowDeleteConfirmation(false);

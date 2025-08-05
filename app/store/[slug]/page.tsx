@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Head from 'next/head';
-import { Store } from '@/store/useAppStore';
-import StoreTemplate from '@/components/template/page';
 import Cookies from 'js-cookie';
 import SleekStoreTemplate from '@/components/template/template2';
-import ModernStoreTemplate from '@/components/template/page';
+import ModernStoreTemplate from '@/components/template/modernStore';
+
 
 // Scale Loader Component
 const ScaleLoader = ({ slug, color = 'black' }: { slug: string; color?: string }) => {

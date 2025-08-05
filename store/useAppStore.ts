@@ -1,5 +1,33 @@
 import { create } from "zustand";
 
+export interface OrderItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  _id: string;
+}
+
+export interface CustomerDetails {
+  fullName: string;
+  email: string;
+  phone: string;
+  address: string;
+}
+
+export interface Order {
+  _id: string;
+  storeId: string;
+  customer: CustomerDetails;
+  items: OrderItem[];
+  totalAmount: number;
+  paymentReference: string;
+  status: 'pending' | 'cancelled' | 'failed' | 'paid' | 'completed';
+  createdAt: string; // ISO Date string
+  updatedAt: string;
+}
+
+
 // Analytics to track, with views in a stack
 export interface Analytics {
   totalViews: number;
@@ -9,27 +37,80 @@ export interface Analytics {
   lastReset: Date | string;
 }
 
+export interface CreateStoreBody {
+  name: string;
+  slug: string;
+  description?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  font?: string;
+  template?: string;
+  currency?: string;
+  domain?: string;
+  socialLinks?: {
+    instagram?: string;
+    facebook?: string;
+    twitter?: string;
+    tiktok?: string;
+  };
+  contact?: {
+    email?: string;
+    phone?: string;
+    address?: string;
+  };
+  shipping: {
+    enabled: boolean;
+    locations: {
+      area: string;
+      fee: number;
+      note?: string;
+    }[];
+  };
+  pickup?: {
+    enabled: boolean;
+    note?: string;
+  };
+  policies?: {
+    returns?: string;
+    terms?: string;
+  };
+}
+
+
+
 // Store holds the name, with details to claim
 export interface Store {
   _id: string;
   name: string;
   slug: string;
-  logo: string
   description?: string;
+  logo?: string;
   primaryColor?: string;
   secondaryColor?: string;
-  currency?: string;
+  currency: string;
   domain?: string;
+  orders?: Order[]
   socialLinks?: { instagram?: string; facebook?: string; twitter?: string; tiktok?: string };
   contact?: { email?: string; phone?: string; address?: string };
-  createdAt: string;
-  isPublished: boolean;
-  analytics?: Analytics;
+  shipping?: {
+    enabled: boolean;
+    locations: { area: string; fee: number; note?: string }[];
+  };
+  pickup?: {
+    enabled: boolean;
+    note?: string;
+  };
+  policies?: {
+    returns?: string;
+    terms?: string;
+  };
+  createdAt?: Date;
+  isPublished?: boolean;
   products?: Product[];
   template?: string;
-  font?: string
+  font?: string;
+  analytics?: any
 }
-
 // Product's the key, for sales to fly free
 export interface Product {
   _id: string;
@@ -94,6 +175,9 @@ export interface FormData {
   domain: string;
   socialLinks: { instagram: string; facebook: string; twitter: string; tiktok: string };
   contact: { email: string; phone: string; address: string };
+  shipping: { methods: string; cost: string };
+  pickup: { location: string };
+  policies: { returnPolicy: string; privacyPolicy: string; termsOfService: string };
 }
 
 export interface ProductFormData {
