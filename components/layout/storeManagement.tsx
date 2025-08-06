@@ -230,7 +230,7 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
   };
 
   const handleCopyStoreUrl = (slug: string) => {
-    const url = `http://${slug}.172.20.10.14.nip.io:3001/`;
+    const url = `http://${slug}.zeevo.shop/`;
 
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(url)
