@@ -6,7 +6,8 @@ import Cookies from 'js-cookie';
 import { motion } from 'framer-motion';
 import {
   Home, Store, Settings, Plus, Edit3, Eye, BarChart3, Loader2, Package, Menu,
-  CheckCircle, Clock, ShoppingCart
+  CheckCircle, Clock, ShoppingCart,
+  Wallet
 } from 'lucide-react';
 import Image from 'next/image';
 import RenderDashboard from '@/components/layout/dashboard';
@@ -18,6 +19,7 @@ import Notification from '@/components/ui/notification';
 import Sidebar from '@/components/ui/sideBar';
 import { useAppStore, Analytics, Product, UserProfile, NavItem, ActionCard, QuickStat, FormData, ProductFormData, NotificationData, Store as IStore } from '@/store/useAppStore';
 import OrdersManagement from '@/components/layout/ordersManagement';
+import WalletManagement from '@/components/layout/walletManagement';
 
 // Define the Dashboard component without props
 const Dashboard: React.FC = () => {
@@ -132,6 +134,7 @@ const Dashboard: React.FC = () => {
     { id: 'store', name: 'My Store', icon: Store },
     { id: 'products', name: 'Products', icon: Package },
     { id: 'orders', name: 'Orders', icon: ShoppingCart },
+    { id: 'zeevo_wallet', name: 'Zeevo Wallet', icon: Wallet },
     { id: 'analytics', name: 'Analytics', icon: BarChart3 },
     { id: 'settings', name: 'Settings', icon: Settings },
   ];
@@ -194,12 +197,11 @@ const Dashboard: React.FC = () => {
               isLoading={false}
               quickStats={quickStats}
               stores={userProfile?.stores || []}
-              handleCreateStore={handleCreateStore}
               actionCards={actionCards}
               setActiveSection={setActiveSection}
               getStatusIcon={getStatusIcon}
+              addNotification={addNotification}
               getButtonStyle={getButtonStyle}
-              userProfile={userProfile}
             />
           )
         );
@@ -211,6 +213,10 @@ const Dashboard: React.FC = () => {
         return (
           <OrdersManagement/>
         );
+      case 'zeevo_wallet':
+        return (
+          <WalletManagement/>
+        )
       case 'store':
         return (
           <RenderStoreManagement
@@ -247,9 +253,9 @@ const Dashboard: React.FC = () => {
         return (
           <RenderDashboard
             isLoading={false}
+            addNotification={addNotification}
             quickStats={quickStats}
             stores={userProfile?.stores || []}
-            handleCreateStore={handleCreateStore}
             actionCards={actionCards}
             setActiveSection={setActiveSection}
             getStatusIcon={getStatusIcon}
@@ -342,14 +348,16 @@ const Dashboard: React.FC = () => {
                        activeSection === 'analytics' ? 'Manage Analytics' :
                        activeSection === 'products' ? 'Manage Products' :
                        activeSection === 'orders' ? 'Manage Orders' :
+                       activeSection === 'zeevo_wallet' ? 'Zeevo Wallet' :
                        'Settings'}
                     </h1>
-                    <p className="text-xs sm:text-sm font-semibold text-gray-800">
+                    <p className="text-xs sm:text-sm font-light text-gray-600">
                       {activeSection === 'dashboard' ? 'Get your store online' :
                        activeSection === 'store' ? 'Manage settings, products' :
                        activeSection === 'analytics' ? 'View Store Analytics' :
                        activeSection === 'products' ? 'Manage your products' :
                        activeSection === 'orders' ? 'Manage your orders' :
+                       activeSection === 'zeevo_wallet' ? 'Manage your earnings and withdrawals' :
                        'Customize preferences'}
                     </p>
                   </div>

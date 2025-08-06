@@ -55,6 +55,14 @@ const InterFont = Inter({
 });
 
 
+export const metadata = {
+  icons: {
+    icon: '/zeevo.png', // or '/favicon.svg' or '/favicon.png'
+  },
+}
+
+
+
 
 export default function RootLayout({
   children,

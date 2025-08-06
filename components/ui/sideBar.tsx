@@ -52,17 +52,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [setActiveSection, navItems]);
 
-  // Handle escape key to close sidebar
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isSidebarOpen) {
-        toggleSidebar();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isSidebarOpen, toggleSidebar]);
 
   const handleNavClick = useCallback((itemId: string) => {
     setActiveSection(itemId);

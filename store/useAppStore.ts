@@ -105,7 +105,7 @@ export interface Store {
     terms?: string;
   };
   createdAt?: Date;
-  isPublished?: boolean;
+  isPublished: boolean;
   products?: Product[];
   template?: string;
   font?: string;
