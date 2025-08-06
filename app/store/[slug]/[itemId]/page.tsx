@@ -1,8 +1,9 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Heart, Instagram, Facebook, Twitter, Loader2, ChevronLeft, ChevronRight, Truck, MapPin, FileText, ChevronDown, X, Plus, Minus } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
@@ -11,7 +12,9 @@ import Header from '@/components/template/modernStore/header';
 
 const ProductDetails: React.FC = () => {
   const params = useParams();
+  const router = useRouter();
   const itemId = params?.itemId as string | undefined;
+  const slug = params?.slug as string | undefined;
   const [product, setProduct] = useState<Product | null>(null);
   const [store, setStore] = useState<Store | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -20,16 +23,32 @@ const ProductDetails: React.FC = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [openPolicy, setOpenPolicy] = useState<string | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [quantity, setQuantity] = useState<number>(1);
+  const hasFetched = useRef(false); // Track if fetch has run
 
-  const { items, addItem, removeItem, getTotalItems, getTotalPrice } = useCartStore();
+  const { items, addItem, removeItem } = useCartStore();
 
   useEffect(() => {
-    if (!itemId) {
-      setError('Invalid product ID');
+    // Debug: Log params and API base URL
+    console.log('useParams output:', params);
+    console.log('itemId:', itemId);
+    console.log('slug:', slug);
+    console.log('Current pathname:', window.location.pathname);
+    console.log('API base URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
+
+    // Prevent multiple fetches
+    if (hasFetched.current) {
+      console.log('Fetch skipped: Already executed');
+      return;
+    }
+
+    if (!itemId || !slug) {
+      const errorMsg = `Invalid parameters: itemId=${itemId || 'undefined'}, slug=${slug || 'undefined'}`;
+      console.error(errorMsg);
+      setError(errorMsg);
       setIsLoading(false);
+      router.push(slug ? `/${slug}` : '/');
       return;
     }
 
@@ -38,11 +57,16 @@ const ProductDetails: React.FC = () => {
       setError(null);
 
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/product/by-id/${itemId}`);
+        console.log('Executing product fetch'); // Debug: Confirm fetch
+        hasFetched.current = true; // Mark fetch as complete
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/product/by-id/${itemId}`;
+        console.log('Fetching product from:', apiUrl);
+        const response = await fetch(apiUrl);
         if (!response.ok) {
-          throw new Error('Product not found');
+          throw new Error(`Product not found (status: ${response.status})`);
         }
         const data = await response.json();
+        console.log('API response:', data);
 
         const storeData: Store = {
           _id: data.store._id,
@@ -60,7 +84,7 @@ const ProductDetails: React.FC = () => {
           pickup: data.store.pickup || { enabled: false },
           policies: data.store.policies || {},
           isPublished: data.store.isPublished ?? false,
-          products: data.store.products || [],
+          products: Array.isArray(data.store.products) ? data.store.products : [],
           createdAt: data.store.createdAt || new Date().toISOString(),
           template: data.store.template,
           font: data.store.font,
@@ -86,46 +110,74 @@ const ProductDetails: React.FC = () => {
         setStore(storeData);
         setProduct(productData);
 
-        if (storeData.products && storeData.products.length > 1) {
-  const relatedProductIds = storeData.products
-    .filter((product: Product) => product._id !== itemId) // compare _id to itemId
-    .slice(0, 4)
-    .map((product: Product) => product._id); // extract _id for fetch
+        // Fetch related products only if storeData.products is valid
+        if (Array.isArray(storeData.products) && storeData.products.length > 0) {
+          console.log('storeData.products:', storeData.products); // Debug: Log products array
+          const relatedProductIds = storeData.products
+            .filter((product: Product) => product && product._id && product._id !== itemId)
+            .slice(0, 4)
+            .map((product: Product) => product._id);
 
-  const relatedPromises = relatedProductIds.map((id: string) =>
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/product/by-id/${id}`).then((res) => {
-      if (!res.ok) throw new Error(`Failed to fetch product ${id}`);
-      return res.json();
-    })
-  );
+          console.log('Fetching related products:', relatedProductIds);
 
-  const relatedData = await Promise.all(relatedPromises);
+          if (relatedProductIds.length === 0) {
+            console.log('No valid related product IDs found');
+            return;
+          }
 
-  const relatedProductsData: Product[] = relatedData.map((item: any) => ({
-    _id: item._id,
-    name: item.name || 'Unnamed Product',
-    price: item.price || 0,
-    description: item.description,
-    images: item.images && item.images.length > 0 ? item.images : ['/api/placeholder/400/400'],
-    isAvailable: item.isAvailable ?? true,
-    createdAt: item.createdAt || new Date().toISOString(),
-    discountPrice: item.discountPrice,
-    stockCount: item.stockCount,
-    tags: Array.isArray(item.tags) ? item.tags : [],
-  }));
+          const relatedPromises = relatedProductIds.map((id: string) =>
+            fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/product/by-id/${id}`)
+              .then((res) => {
+                if (!res.ok) {
+                  console.warn(`Failed to fetch related product ${id}: ${res.status}`);
+                  return null;
+                }
+                return res.json();
+              })
+              .catch((err) => {
+                console.warn(`Error fetching related product ${id}:`, err.message);
+                return null;
+              })
+          );
 
-  setRelatedProducts(relatedProductsData);
-}
+          const relatedData = await Promise.all(relatedPromises);
+          console.log('Related products response:', relatedData);
 
+          const relatedProductsData: Product[] = relatedData
+            .filter((item): item is NonNullable<typeof item> => item !== null)
+            .map((item: any) => ({
+              _id: item._id,
+              name: item.name || 'Unnamed Product',
+              price: item.price || 0,
+              description: item.description,
+              images: item.images && item.images.length > 0 ? item.images : ['/api/placeholder/400/400'],
+              isAvailable: item.isAvailable ?? true,
+              createdAt: item.createdAt || new Date().toISOString(),
+              discountPrice: item.discountPrice,
+              stockCount: item.stockCount,
+              tags: Array.isArray(item.tags) ? item.tags : [],
+            }));
+
+          setRelatedProducts(relatedProductsData);
+        } else {
+          console.log('No related products available or invalid products array');
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        const errorMsg = err instanceof Error ? err.message : 'An error occurred while fetching product data';
+        console.error('Fetch error:', errorMsg);
+        setError(errorMsg);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [itemId]);
+
+    // Cleanup to reset hasFetched on unmount
+    return () => {
+      hasFetched.current = false;
+    };
+  }, [itemId, slug, router]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-NG', {
@@ -206,7 +258,7 @@ const ProductDetails: React.FC = () => {
         quantity: quantity,
         storeId: store.slug,
       });
-      setQuantity(1); // Reset quantity after adding to cart
+      setQuantity(1);
     }
   };
 
@@ -240,8 +292,7 @@ const ProductDetails: React.FC = () => {
   }
 
   return (
-    <div style={{fontFamily: store.font}} className="min-h-screen bg-gray-50">
-      {/* Header */}
+    <div style={{ fontFamily: store.font }} className="min-h-screen bg-gray-50">
       <Header
         store={store}
         setIsCartOpen={setIsCartOpen}
@@ -249,28 +300,23 @@ const ProductDetails: React.FC = () => {
         searchQuery={searchQuery}
       />
 
-    
-
-      {/* Breadcrumb Navigation */}
       <nav className="max-w-7xl mx-auto px-4 py-4 border-b border-gray-200">
         <div className="flex items-center space-x-2 text-sm">
           <Link 
-            href={`/`} 
+            href="/" 
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             Home
           </Link>
+         
           <span className="text-gray-400">/</span>
           <span className="text-gray-900 font-medium">{product.name}</span>
         </div>
       </nav>
 
-      {/* Product Details Section */}
       <section className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-          {/* Product Image Gallery */}
           <div className="space-y-4">
-            {/* Main Image */}
             <div className="relative aspect-square rounded-2xl overflow-hidden shadow-lg group">
               <Image
                 src={product.images?.[selectedImageIndex] || '/api/placeholder/400/400'}
@@ -280,8 +326,6 @@ const ProductDetails: React.FC = () => {
                 priority
                 quality={70}
               />
-
-              {/* Navigation arrows for multiple images */}
               {product.images && product.images.length > 1 && (
                 <>
                   <button
@@ -298,16 +342,12 @@ const ProductDetails: React.FC = () => {
                   </button>
                 </>
               )}
-
-              {/* Image counter */}
               {product.images && product.images.length > 1 && (
                 <div className="absolute bottom-4 right-4 px-3 py-1 bg-black/60 text-white text-sm rounded-full">
                   {selectedImageIndex + 1} / {product.images.length}
                 </div>
               )}
             </div>
-
-            {/* Thumbnail Images */}
             {product.images && product.images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
                 {product.images.map((image, index) => (
@@ -325,7 +365,7 @@ const ProductDetails: React.FC = () => {
                       alt={`${product.name} thumbnail ${index + 1}`}
                       fill
                       className="object-cover"
-                      quality={5}
+                      quality={50}
                     />
                   </button>
                 ))}
@@ -333,13 +373,10 @@ const ProductDetails: React.FC = () => {
             )}
           </div>
 
-          {/* Product Info */}
           <div className="space-y-6">
             <h1 className="text-3xl md:text-4xl font-bold" style={{ color: store.secondaryColor }}>
               {product.name}
             </h1>
-
-            {/* Tags */}
             {product.tags && product.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {product.tags.map((tag, index) => (
@@ -352,28 +389,30 @@ const ProductDetails: React.FC = () => {
                 ))}
               </div>
             )}
-
             <div className="flex items-center gap-4">
-               {product.discountPrice && (
+              {product.discountPrice ? (
+                <>
+                  <span className="text-2xl md:text-3xl font-semibold" style={{ color: store.secondaryColor }}>
+                    {formatPrice(product.discountPrice)}
+                  </span>
+                  <span className="text-md text-gray-500 line-through">
+                    {formatPrice(product.price)}
+                  </span>
+                </>
+              ) : (
                 <span className="text-2xl md:text-3xl font-semibold" style={{ color: store.secondaryColor }}>
-                  {formatPrice(product.discountPrice)}
+                  {formatPrice(product.price)}
                 </span>
               )}
-              <span className="text-md text-gray-500 line-through" >
-                {formatPrice(product.price)}
-              </span>
             </div>
-
             {product.description && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">{product.description}</p>
               </div>
             )}
-
             <div className="flex items-center gap-4">
-
-               <button
+              <button
                 onClick={handleAddToCart}
                 className="flex-1 py-3 rounded-lg font-semibold text-white transition-all hover:scale-105 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 style={{ backgroundColor: store.secondaryColor }}
@@ -383,8 +422,6 @@ const ProductDetails: React.FC = () => {
                   ? 'Add to Cart'
                   : 'Out of Stock'}
               </button>
-
-
               <div className="flex items-center gap-2 sm:gap-3">
                 <button
                   onClick={handleDecreaseQuantity}
@@ -398,7 +435,7 @@ const ProductDetails: React.FC = () => {
                 <input
                   type="number"
                   value={quantity}
-                  readOnly
+                  onChange={handleQuantityInputChange}
                   className="w-10 text-center rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   min="1"
                   max={product.stockCount !== undefined ? product.stockCount : undefined}
@@ -414,9 +451,7 @@ const ProductDetails: React.FC = () => {
                   <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
-             
             </div>
-
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Product Details</h3>
               <ul className="list-disc list-inside text-gray-600 text-sm space-y-1">
@@ -424,8 +459,6 @@ const ProductDetails: React.FC = () => {
                 {product.stockCount !== undefined && <li>Stock Count: {product.stockCount}</li>}
               </ul>
             </div>
-
-            {/* Policies */}
             {store.policies && (store.policies.returns || store.policies.terms) && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
@@ -491,8 +524,6 @@ const ProductDetails: React.FC = () => {
             )}
           </div>
         </div>
-
-        {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
             <h2 className="text-2xl font-bold mb-8" style={{ color: store.secondaryColor }}>
@@ -502,7 +533,7 @@ const ProductDetails: React.FC = () => {
               {relatedProducts.map((relatedProduct) => (
                 <Link
                   key={relatedProduct._id}
-                  href={`/${store.slug}/product/${relatedProduct._id}`}
+                  href={`/${relatedProduct._id}`} // Matches rewrite format
                   className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
                 >
                   <div className="relative aspect-square overflow-hidden">
@@ -514,12 +545,12 @@ const ProductDetails: React.FC = () => {
                     />
                   </div>
                   <div className="p-3">
-                    <h3 className="font-light text-sm md:text-base mb-1 line-clamp-2 text-gray-900">
-                      {relatedProduct.name}
-                    </h3>
-                    <span className="text-sm md:text-lg font-semibold" style={{ color: store.secondaryColor }}>
-                      {formatPrice(relatedProduct.price)}
-                    </span>
+                    <h3 className="font-semibold text-gray-900 truncate">{relatedProduct.name}</h3>
+                    <p className="text-sm text-gray-600">
+                      {relatedProduct.discountPrice
+                        ? formatPrice(relatedProduct.discountPrice)
+                        : formatPrice(relatedProduct.price)}
+                    </p>
                   </div>
                 </Link>
               ))}
@@ -528,91 +559,105 @@ const ProductDetails: React.FC = () => {
         )}
       </section>
 
-      {/* Footer */}
-      <footer className="text-white py-12" style={{ backgroundColor: store.secondaryColor }}>
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Store Info */}
-            <div>
-              <div className="flex items-center space-x-3 mb-4">
-                {store.logo && (
-                  <div className="relative w-8 h-8">
-                    <Image
-                      src={store.logo}
-                      alt="Logo"
-                      fill
-                      className="rounded-full object-cover"
-                    />
+      {store.socialLinks && Object.keys(store.socialLinks).length > 0 && (
+        <footer className="border-t border-gray-200 py-8">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex gap-4">
+                {Object.entries(store.socialLinks).map(([platform, url]) => (
+                  url && (
+                    <a
+                      key={platform}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-600 hover:text-gray-900 transition-colors"
+                    >
+                      {getSocialIcon(platform)}
+                    </a>
+                  )
+                ))}
+              </div>
+              <p className="text-sm text-gray-600">
+                &copy; {new Date().getFullYear()} {store.name}. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </footer>
+      )}
+
+      <AnimatePresence>
+        {isCartOpen && (
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50"
+          >
+            <div className="flex flex-col h-full">
+              <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 className="text-lg font-semibold">Cart</h2>
+                <button
+                  onClick={() => setIsCartOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {cartItems.length === 0 ? (
+                  <p className="text-gray-600 text-sm text-center">Your cart is empty.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {cartItems.map((item) => (
+                      <div key={item.id} className="flex items-center gap-4 border-b border-gray-200 pb-4">
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden">
+                          <Image
+                            src={product?.images?.[0] || '/api/placeholder/100/100'}
+                            alt={item.title}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-gray-900">{item.title}</h3>
+                          <p className="text-sm text-gray-600">{formatPrice(item.price)}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <button
+                              onClick={() => handleQuantityChange(item, -1)}
+                              className="p-1 rounded-full border border-gray-300 hover:bg-gray-100"
+                            >
+                              <Minus size={16} />
+                            </button>
+                            <span className="text-sm">{item.quantity}</span>
+                            <button
+                              onClick={() => handleQuantityChange(item, 1)}
+                              className="p-1 rounded-full border border-gray-300 hover:bg-gray-100"
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
-                <h3 className="text-xl font-bold">{store.name}</h3>
               </div>
-              {store.description && (
-                <p className="text-gray-200 text-sm mb-4">{store.description}</p>
+              {cartItems.length > 0 && (
+                <div className="p-4 border-t border-gray-200">
+                  <button
+                    className="w-full py-3 rounded-lg font-semibold text-white"
+                    style={{ backgroundColor: store.secondaryColor }}
+                  >
+                    Proceed to Checkout
+                  </button>
+                </div>
               )}
             </div>
-
-            {/* Contact Info */}
-            {store.contact && (
-              <div>
-                <h4 className="text-lg font-semibold mb-4">Contact</h4>
-                <div className="space-y-2 text-gray-200 text-sm">
-                  {store.contact.email && <p>Email: {store.contact.email}</p>}
-                  {store.contact.phone && <p>Phone: {store.contact.phone}</p>}
-                  {store.contact.address && <p>Address: {store.contact.address}</p>}
-                </div>
-              </div>
-            )}
-
-            {/* Social Links */}
-            {store.socialLinks && Object.values(store.socialLinks).some(link => link) && (
-              <div>
-                <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
-                <div className="flex space-x-4">
-                  {Object.entries(store.socialLinks).map(([platform, link]) =>
-                    link && (
-                      <a
-                        key={platform}
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 bg-black bg-opacity-20 rounded-full hover:bg-opacity-30 transition-colors"
-                      >
-                        {getSocialIcon(platform)}
-                      </a>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Policies */}
-            {store.policies && (store.policies.returns || store.policies.terms) && (
-              <div>
-                <h4 className="text-lg font-semibold mb-4">Policies</h4>
-                <div className="space-y-2 text-gray-200 text-sm">
-                  {store.policies.returns && (
-                    <div>
-                      <h5 className="font-medium">Returns</h5>
-                      <p className="line-clamp-3">{store.policies.returns}</p>
-                    </div>
-                  )}
-                  {store.policies.terms && (
-                    <div>
-                      <h5 className="font-medium">Terms</h5>
-                      <p className="line-clamp-3">{store.policies.terms}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="border-t border-white border-opacity-20 mt-8 pt-8 text-center text-gray-200 text-sm">
-            <p>© 2025 {store.name}. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
