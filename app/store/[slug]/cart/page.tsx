@@ -6,6 +6,7 @@ import { ShoppingBag, X, Plus, Minus, Loader2, Instagram, Facebook, Twitter } fr
 import { useCartStore } from '@/store/useCartStore';
 import { Store } from '@/store/useAppStore';
 import Header from '@/components/template/modernStore/header';
+import Footer from '@/components/template/modernStore/footer';
 
 const CartView: React.FC = () => {
   const [store, setStore] = useState<Store | null>(null);
@@ -387,85 +388,7 @@ const CartView: React.FC = () => {
         )}
       </section>
 
-      <footer className="text-white py-12" style={{ backgroundColor: store.secondaryColor }}>
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-3 mb-4">
-                {store.logo && (
-                  <div className="relative w-8 h-8">
-                    <img
-                      src={store.logo}
-                      alt="Logo"
-                      className="rounded-full object-cover"
-                    />
-                  </div>
-                )}
-                <h3 className="text-xl font-bold">{store.name}</h3>
-              </div>
-              {store.description && (
-                <p className="text-gray-200 text-sm mb-4">{store.description}</p>
-              )}
-            </div>
-
-            {store.contact && (
-              <div>
-                <h4 className="text-lg font-semibold mb-4">Contact</h4>
-                <div className="space-y-2 text-gray-200 text-sm">
-                  {store.contact.email && <p>Email: {store.contact.email}</p>}
-                  {store.contact.phone && <p>Phone: {store.contact.phone}</p>}
-                  {store.contact.address && <p>Address: {store.contact.address}</p>}
-                </div>
-              </div>
-            )}
-
-            {store.socialLinks && Object.values(store.socialLinks).some(link => link) && (
-              <div>
-                <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
-                <div className="flex space-x-4">
-                  {Object.entries(store.socialLinks).map(([platform, link]) =>
-                    link && (
-                      <a
-                        key={platform}
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 bg-black bg-opacity-20 rounded-full hover:bg-opacity-30 transition-colors"
-                      >
-                        {getSocialIcon(platform)}
-                      </a>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {store.policies && (store.policies.returns || store.policies.terms) && (
-              <div>
-                <h4 className="text-lg font-semibold mb-4">Policies</h4>
-                <div className="space-y-2 text-gray-200 text-sm">
-                  {store.policies.returns && (
-                    <div>
-                      <h5 className="font-medium">Returns</h5>
-                      <p className="line-clamp-3">{store.policies.returns}</p>
-                    </div>
-                  )}
-                  {store.policies.terms && (
-                    <div>
-                      <h5 className="font-medium">Terms</h5>
-                      <p className="line-clamp-3">{store.policies.terms}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="border-t border-white border-opacity-20 mt-8 pt-8 text-center text-gray-200 text-sm">
-            <p>© 2025 {store.name}. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer store={store}/>
     </div>
   );
 };

@@ -17,11 +17,11 @@ const Header: React.FC<HeaderProps> = ({
   setSearchQuery,
   searchQuery,
 }) => {
-  const { name, logo, secondaryColor = '#6366f1' } = store;
+  const { name, logo, secondaryColor = '#6366f1', primaryColor = '#FFFFFF' } = store;
   const { getTotalItems } = useCartStore();
 
   return (
-    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
+    <header style={{ backgroundColor: primaryColor}} className="sticky top-0 z-50 backdrop-blur-md border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
