@@ -90,6 +90,7 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
   const [showPreviewModal, setShowPreviewModal] = useState<Store | null>(null);
   const [appearanceSettings, setAppearanceSettings] = useState<{ template: string; font: string } | null>(null);
   const [showUpgradeOverlay, setShowUpgradeOverlay] = useState<boolean>(false);
+  const [isUpgrading, setIsUpgrading] = useState(false)
 
   interface DropdownOption {
     value: string;
@@ -218,6 +219,54 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
     });
     setShowEditForm(true);
   };
+
+   const handleUpgradeToPro = async () => {
+      if (!addNotification) {
+        console.error('Notification function not provided');
+        return;
+      }
+  
+      const token = Cookies.get('token'); // Retrieve token using js-cookie
+      if (!token) {
+        addNotification('Authentication error: No token found', 'error');
+        return;
+      }
+  
+      setIsUpgrading(true);
+      try {
+        // Make a POST request to your backend to create a payment session
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/subscribe/pro`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            plan: 'pro', // Specify the plan to upgrade to
+            successUrl: `${window.location.origin}/dashboard?upgrade=success`, // Redirect URL after successful payment
+            cancelUrl: `${window.location.origin}/dashboard?upgrade=canceled`, // Redirect URL if user cancels
+          }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Failed to create payment session');
+        }
+  
+        const { paymentUrl } = await response.json(); // Expecting { paymentUrl: string } from backend
+        if (paymentUrl) {
+          // Redirect user to the payment link
+          window.location.href = paymentUrl;
+        } else {
+          throw new Error('No payment URL received');
+        }
+      } catch (error) {
+        const err = error as Error;
+        addNotification(`Failed to initiate upgrade: ${err.message}`, 'error');
+        console.error('Error creating payment session:', err);
+      } finally {
+        setIsUpgrading(false);
+      }
+    };
 
   const handleCopyFallback = (text: string) => {
     const input = document.createElement('input');
@@ -892,15 +941,14 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
                 To make your store public or private, please upgrade to a Pro plan. This will unlock store visibility toggling and other premium features.
               </p>
               <div className="flex gap-3">
-                <motion.a
-                  href="https://x.ai/grok"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <motion.button
+                  onClick={handleUpgradeToPro}
                   whileHover={{ scale: 1.02 }}
-                  className="flex-1 bg-indigo-600 text-white py-2.5 rounded-full text-sm font-semibold text-center"
+                  disabled={isUpgrading}
+                  className={`flex-1 bg-indigo-600 text-white py-2.5 rounded-full text-sm font-semibold text-center ${isUpgrading && ('opacity-40')}`}
                 >
-                  View Plans
-                </motion.a>
+                 {isUpgrading ? 'Processing...': ' Upgrade to Pro'}
+                </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   onClick={() => setShowUpgradeOverlay(false)}

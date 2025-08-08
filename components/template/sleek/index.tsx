@@ -298,7 +298,7 @@ const SleekStoreTemplate: React.FC<SleekStoreTemplateProps> = ({ store, isPrevie
                       addToCart(product);
                     }}
                     disabled={!product.isAvailable}
-                    className="absolute inset-x-2 bottom-2 py-1.5 text-white text-sm rounded-md hover:bg-[#c56a05] disabled:opacity-50 transition-opacity opacity-0 group-hover:opacity-100"
+                    className="absolute hidden md:inline-block inset-x-2 bottom-2 py-1.5 text-white text-sm rounded-md hover:bg-[#c56a05] disabled:opacity-50 transition-opacity opacity-0 group-hover:opacity-100"
                     style={{ backgroundColor: secondaryColor }}
                     aria-label={`Add ${product.name} to cart`}
                   >
