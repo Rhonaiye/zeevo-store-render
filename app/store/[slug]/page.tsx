@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Cookies from 'js-cookie';
-import SleekStoreTemplate from '@/components/template/template2';
+import SleekStoreTemplate from '@/components/template/sleek';
 import ModernStoreTemplate from '@/components/template/modernStore';
 
 

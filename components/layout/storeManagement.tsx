@@ -8,7 +8,7 @@ import DeleteStoreConfirmation from '../ui/deleteStore';
 import StoreForm from './storeForm';
 import ModernStoreTemplate from '@/components/template/modernStore';
 import CustomDropdown from '../ui/dropDown';
-import SleekStoreTemplate from '../template/template2';
+import SleekStoreTemplate from '../template/sleek';
 import { useAppStore, UserProfile, Product, Store } from '@/store/useAppStore';
 import { CreateStoreBody } from '@/store/useAppStore';
 
