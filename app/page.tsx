@@ -469,47 +469,31 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="py-16 px-6 bg-gray-900 text-gray-300">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
-            <div>
-              <h4 className="text-base font-semibold mb-6 text-white">Product</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="/features" className="hover:text-indigo-400 transition">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-indigo-400 transition">Pricing</Link></li>
-                <li><Link href="/templates" className="hover:text-indigo-400 transition">Templates</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-base font-semibold mb-6 text-white">Support</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="/help" className="hover:text-indigo-400 transition">Help Center</Link></li>
-                <li><Link href="/contact" className="hover:text-indigo-400 transition">Contact Us</Link></li>
-                <li><Link href="/status" className="hover:text-indigo-400 transition">Status</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-base font-semibold mb-6 text-white">Company</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="/about" className="hover:text-indigo-400 transition">About</Link></li>
-                <li><Link href="/blog" className="hover:text-indigo-400 transition">Blog</Link></li>
-                <li><Link href="/careers" className="hover:text-indigo-400 transition">Careers</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-base font-semibold mb-6 text-white">Connect</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="https://twitter.com" className="flex items-center gap-2 hover:text-indigo-400 transition"><Twitter className="w-4 h-4" /> Twitter</Link></li>
-                <li><Link href="https://instagram.com" className="flex items-center gap-2 hover:text-indigo-400 transition"><Instagram className="w-4 h-4" /> Instagram</Link></li>
-                <li><Link href="https://linkedin.com" className="flex items-center gap-2 hover:text-indigo-400 transition"><Linkedin className="w-4 h-4" /> LinkedIn</Link></li>
-              </ul>
+       <footer className="py-12 px-6 bg-gray-900 text-gray-300">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              {/* Logo/Brand */}
+              <div className="flex items-center gap-2">
+                <div className="text-xl font-bold text-white">Zeevo</div>
+                <span className="text-gray-500">•</span>
+                <span className="text-sm">Build your online store</span>
+              </div>
+
+              {/* Quick Links */}
+              <div className="flex items-center gap-6 text-sm">
+                <Link href="/help" className="hover:text-white transition">Help</Link>
+                <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
+                <Link href="/terms" className="hover:text-white transition">Terms</Link>
+                <Link href="/contact" className="hover:text-white transition">Contact</Link>
+              </div>
+
+              {/* Copyright */}
+              <div className="text-sm text-gray-500">
+                © {new Date().getFullYear()} Zeevo. All rights reserved.
+              </div>
             </div>
           </div>
-          <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            © {new Date().getFullYear()} Zeevo — All rights reserved
-          </div>
-        </div>
-      </footer>
+        </footer>
     </main>
   );
 }

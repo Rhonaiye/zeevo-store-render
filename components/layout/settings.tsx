@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Loader2, User, Mail, Clock, Camera, Crown, ArrowUpRight, Check, X } from 'lucide-react';
 import { FC, useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import Cookies from 'js-cookie'; // Import js-cookie
+import { useRouter } from 'next/navigation';
 
 // Define interface for component props
 interface RenderSettingsProps {
@@ -12,59 +12,16 @@ interface RenderSettingsProps {
 }
 
 // Define the RenderSettings component
-const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification }) => {
+const RenderSettings: FC<RenderSettingsProps> = ({ isLoading }) => {
   const { userProfile } = useAppStore();
   const [isUpgrading, setIsUpgrading] = useState(false); // Track upgrade request state
   const isFreePlan = userProfile?.subscription?.plan?.toLowerCase() === 'free';
   const isPro = userProfile?.subscription?.plan?.toLowerCase() === 'pro';
+  const router = useRouter()
 
   // Handle Upgrade to Pro button click
   const handleUpgrade = async () => {
-    if (!addNotification) {
-      console.error('Notification function not provided');
-      return;
-    }
-
-    const token = Cookies.get('token'); // Retrieve token using js-cookie
-    if (!token) {
-      addNotification('Authentication error: No token found', 'error');
-      return;
-    }
-
-    setIsUpgrading(true);
-    try {
-      // Make a POST request to your backend to create a payment session
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/subscribe/pro`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          plan: 'pro', // Specify the plan to upgrade to
-          successUrl: `${window.location.origin}/dashboard?upgrade=success`, // Redirect URL after successful payment
-          cancelUrl: `${window.location.origin}/dashboard?upgrade=canceled`, // Redirect URL if user cancels
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create payment session');
-      }
-
-      const { paymentUrl } = await response.json(); // Expecting { paymentUrl: string } from backend
-      if (paymentUrl) {
-        // Redirect user to the payment link
-        window.location.href = paymentUrl;
-      } else {
-        throw new Error('No payment URL received');
-      }
-    } catch (error) {
-      const err = error as Error;
-      addNotification(`Failed to initiate upgrade: ${err.message}`, 'error');
-      console.error('Error creating payment session:', err);
-    } finally {
-      setIsUpgrading(false);
-    }
+    router.push('/dashboard/pricing')
   };
 
   return (
