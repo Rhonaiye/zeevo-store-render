@@ -25,7 +25,6 @@ import WalletManagement from '@/components/layout/walletManagement';
 const Dashboard: React.FC = () => {
   const { userProfile, setUserProfile } = useAppStore();
   const [activeSection, setActiveSection] = useState('dashboard');
-  const [showCreateForm, setShowCreateForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
@@ -166,12 +165,6 @@ const Dashboard: React.FC = () => {
     { label: 'Store Plan', value: userProfile?.subscription.plan || 'N/A', change: null },
   ];
 
-  const handleCreateStore = () => {
-    if ((userProfile?.stores?.length || 0) < 1) {
-      setShowCreateForm(true);
-      setActiveSection('store');
-    }
-  };
 
   const getStatusIcon = (status: string) => {
     return status === 'completed' ? <CheckCircle className="w-4 h-4 text-green-500" /> :
@@ -306,7 +299,7 @@ const Dashboard: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => router.push('/login')}
+              onClick={() => router.push('/auth/login')}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
             >
               Go to Login
