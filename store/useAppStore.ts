@@ -78,6 +78,8 @@ export interface CreateStoreBody {
 
 
 
+
+
 // Store holds the name, with details to claim
 export interface Store {
   _id: string;
@@ -126,6 +128,19 @@ export interface Product {
   template?: string
 }
 
+interface PayoutAccount {
+  _id: string;
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  bankCode: string;
+  status: 'pending' | 'active' | 'suspended';
+  createdAt: string;
+  isDefault: boolean;
+  updatedAt: string;
+  userId: string;
+}
+
 // Profile for user, with stores to peruse
 export interface UserProfile {
   _id: string;
@@ -137,6 +152,9 @@ export interface UserProfile {
   lastLogin: string;
   isVerified: boolean;
   subscription: { plan: string; status: string }
+  wallet: {
+    payoutAccounts: PayoutAccount[]
+  }
 }
 
 // Nav items align, with icons that shine

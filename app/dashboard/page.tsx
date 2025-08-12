@@ -93,6 +93,7 @@ const Dashboard: React.FC = () => {
       }
 
       const { data } = await response.json();
+      console.log(data)
       return data as UserProfile;
     } catch (error) {
       const err = error as Error;
@@ -389,5 +390,5 @@ const Dashboard: React.FC = () => {
   );
 };
 
-// Export the Dashboard component as the default export
+
 export default Dashboard;
