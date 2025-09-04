@@ -85,11 +85,11 @@ const Footer: React.FC<FooterProps> = ({
             <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center gap-4">
                 {logo && (
-                  <div className="relative">
+                  <div className="relative bg-white">
                     <img 
                       src={logo} 
                       alt={`${name} logo`} 
-                      className="w-12 h-12 rounded-2xl shadow-lg ring-2 ring-white/10" 
+                      className="w-12 h-12 rounded-2xl " 
                     />
                   </div>
                 )}

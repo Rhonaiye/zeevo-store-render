@@ -161,6 +161,7 @@ const SleekStoreTemplate: React.FC<SleekStoreTemplateProps> = ({ store, isPrevie
       <Header
         name={name}
         logo={logo}
+        storeSlug={slug}
         secondaryColor={secondaryColor}
         primaryColor={primaryColor} 
         getTotalItems={getTotalItems}

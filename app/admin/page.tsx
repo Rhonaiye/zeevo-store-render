@@ -8,6 +8,7 @@ import UserManagement from '@/components/admin/layout/userManagement';
 import StoresManagement from '@/components/admin/layout/storeManagement';
 import Sidebar from '@/components/admin/ui/sideBar';
 import Dashboard from '@/components/admin/layout/dashboard';
+import SubscriptionManagement from '@/components/admin/layout/subscriptionManagement';
 
 // Types
 interface Customer {
@@ -134,6 +135,9 @@ const ZeevoAdminDashboard: React.FC = () => {
         return <UserManagement />;
       case 'stores':
         return <StoresManagement />;
+
+      case 'subscriptions':
+        return <SubscriptionManagement />;
       default:
         return <div className="text-center py-12 text-gray-600">{activeTab} management coming soon...</div>;
     }

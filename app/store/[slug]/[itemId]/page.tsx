@@ -9,6 +9,7 @@ import { ShoppingBag, Heart, Instagram, Facebook, Twitter, Loader2, ChevronLeft,
 import { useCartStore } from '@/store/useCartStore';
 import { Product, Store } from '@/store/useAppStore';
 import Header from '@/components/template/modernStore/header';
+import HeaderSleek from '@/components/template/sleek/header';
 
 const ProductDetails: React.FC = () => {
   const params = useParams();
@@ -28,6 +29,7 @@ const ProductDetails: React.FC = () => {
   const hasFetched = useRef(false); // Track if fetch has run
 
   const { items, addItem, removeItem } = useCartStore();
+  const { getTotalItems } = useCartStore();
 
   useEffect(() => {
     // Debug: Log params and API base URL
@@ -293,12 +295,26 @@ const ProductDetails: React.FC = () => {
 
   return (
     <div style={{ fontFamily: store.font }} className="min-h-screen bg-gray-50">
-      <Header
-        store={store}
-        setIsCartOpen={setIsCartOpen}
-        setSearchQuery={setSearchQuery}
-        searchQuery={searchQuery}
-      />
+      {
+        store.template === 'modernStore' ? (
+          <Header
+            store={store}
+            setIsCartOpen={setIsCartOpen}
+            setSearchQuery={setSearchQuery}
+            searchQuery={searchQuery}
+          />
+        ) : (
+          <HeaderSleek
+            name={store.name}
+            logo={store.logo}
+            storeSlug={store.slug}
+            primaryColor={store.primaryColor}
+            secondaryColor={store.secondaryColor}
+            getTotalItems={getTotalItems}
+            setIsCartOpen={setIsCartOpen}
+          />
+        )
+      }
 
       <nav className="max-w-7xl mx-auto px-4 py-4 border-b border-gray-200">
         <div className="flex items-center space-x-2 text-sm">
@@ -314,7 +330,7 @@ const ProductDetails: React.FC = () => {
         </div>
       </nav>
 
-      <section className="max-w-7xl mx-auto px-4 py-16">
+      <section className="max-w-7xl mx-auto px-4 max-sm:pt-5 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           <div className="space-y-4">
             <div className="relative aspect-square rounded-2xl overflow-hidden shadow-lg group">
@@ -330,13 +346,13 @@ const ProductDetails: React.FC = () => {
                 <>
                   <button
                     onClick={prevImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 hover:bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 hover:bg-white rounded-full shadow-lg md:opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <ChevronLeft size={20} className="text-gray-800" />
                   </button>
                   <button
                     onClick={nextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 hover:bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 hover:bg-white rounded-full shadow-lg md:opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <ChevronRight size={20} className="text-gray-800" />
                   </button>
@@ -436,7 +452,7 @@ const ProductDetails: React.FC = () => {
                   type="number"
                   value={quantity}
                   onChange={handleQuantityInputChange}
-                  className="w-10 text-center rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="w-10 text-center rounded-md text-black border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   min="1"
                   max={product.stockCount !== undefined ? product.stockCount : undefined}
                   aria-label="Quantity"

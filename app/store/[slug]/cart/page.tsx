@@ -6,6 +6,7 @@ import { ShoppingBag, X, Plus, Minus, Loader2, Instagram, Facebook, Twitter } fr
 import { useCartStore } from '@/store/useCartStore';
 import { Store } from '@/store/useAppStore';
 import Header from '@/components/template/modernStore/header';
+import HeaderSleek from '@/components/template/sleek/header';
 import Footer from '@/components/template/modernStore/footer';
 
 const CartView: React.FC = () => {
@@ -205,12 +206,24 @@ const CartView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header
-        store={store}
-        setIsCartOpen={() => {}}
-        setSearchQuery={setSearchQuery}
-        searchQuery={searchQuery}
-      />
+      {store.template === 'modernStore' ? (
+        <Header
+          store={store}
+          setIsCartOpen={() => {}}
+          setSearchQuery={setSearchQuery}
+          searchQuery={searchQuery}
+        />
+      ) : (
+        <HeaderSleek
+          name={store.name}
+          logo={store.logo}
+          storeSlug={store.slug}
+          primaryColor={store.primaryColor}
+          secondaryColor={store.secondaryColor}
+          getTotalItems={getTotalItems}
+          setIsCartOpen={() => {}}
+        />
+      )}
 
       <section className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="text-center mb-6 sm:mb-8">
@@ -227,7 +240,7 @@ const CartView: React.FC = () => {
             <ShoppingBag className="w-10 h-10 mx-auto mb-3 text-gray-300" />
             <p className="text-base sm:text-lg font-medium">No items in your cart</p>
             <Link
-              href={`/${store.slug}`}
+              href={`/`}
               className="inline-flex items-center gap-2 px-6 py-3 mt-4 rounded-full text-white font-semibold transition-all hover:scale-105"
               style={{ backgroundColor: store.secondaryColor }}
             >
