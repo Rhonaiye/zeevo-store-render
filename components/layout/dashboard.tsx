@@ -282,7 +282,9 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
     </motion.div>
   );
 
-  // Action cards section
+
+
+  // Action cards sections
   const ActionCardsSection = () => (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-4">
