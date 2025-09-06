@@ -1,8 +1,8 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ShoppingBag, X, Plus, Minus, Loader2, Instagram, Facebook, Twitter } from 'lucide-react';
+import { ShoppingBag, X, Plus, Minus, Loader2, Instagram, Facebook, Twitter, ChevronDown } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { Store } from '@/store/useAppStore';
 import Header from '@/components/template/modernStore/header';
@@ -25,7 +25,11 @@ const CartView: React.FC = () => {
     email: '',
     phoneNumber: '',
     address: '',
+    deliveryMethod: 'pickup' as 'pickup' | 'shipping',
+    selectedShippingLocation: '',
   });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!storeSlug) {
@@ -44,7 +48,6 @@ const CartView: React.FC = () => {
           throw new Error('Store not found');
         }
         const data = await response.json();
-
         const storeResponse = data.data;
 
         const storeData: Store = {
@@ -74,6 +77,11 @@ const CartView: React.FC = () => {
         }
 
         setStore(storeData);
+        setFormData((prev) => ({
+          ...prev,
+          deliveryMethod: storeData.shipping?.enabled ? 'shipping' : storeData.pickup?.enabled ? 'pickup' : 'pickup',
+          selectedShippingLocation: storeData.shipping?.locations?.[0]?.area || '',
+        }));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred while fetching store data');
       } finally {
@@ -83,6 +91,16 @@ const CartView: React.FC = () => {
 
     fetchStore();
   }, [storeSlug]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const formatPrice = (price: number) => {
     try {
@@ -108,7 +126,7 @@ const CartView: React.FC = () => {
     }
   };
 
-  const handleQuantityChange = (item: { id: string; title: string; price: number; quantity: number; storeId: string}, delta: number) => {
+  const handleQuantityChange = (item: { id: string; title: string; price: number; quantity: number; storeId: string }, delta: number) => {
     const product = store?.products?.find((p) => p._id === item.id);
     if (!product) return;
 
@@ -127,14 +145,31 @@ const CartView: React.FC = () => {
     setCheckoutError(null);
   };
 
+  const handleShippingLocationSelect = (location: string) => {
+    setFormData((prev) => ({ ...prev, selectedShippingLocation: location }));
+    setIsDropdownOpen(false);
+    setCheckoutError(null);
+  };
+
+  const getShippingFee = () => {
+    if (formData.deliveryMethod === 'shipping' && formData.selectedShippingLocation) {
+      const location = store?.shipping?.locations.find((loc) => loc.area === formData.selectedShippingLocation);
+      return location?.fee || 0;
+    }
+    return 0;
+  };
+
   const handleCheckout = async () => {
     setIsCheckoutLoading(true);
     setCheckoutError(null);
 
     try {
-      const { fullName, email, phoneNumber, address } = formData;
+      const { fullName, email, phoneNumber, address, deliveryMethod, selectedShippingLocation } = formData;
       if (!fullName || !email || !phoneNumber || !address) {
         throw new Error('Please fill in all required fields');
+      }
+      if (deliveryMethod === 'shipping' && !selectedShippingLocation) {
+        throw new Error('Please select a shipping location');
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/order/create`, {
@@ -150,12 +185,12 @@ const CartView: React.FC = () => {
             name: item.title,
             price: item.price,
           })),
-          
-            fullName,
-            email,
-            phone: phoneNumber,
-            address,
-          
+          fullName,
+          email,
+          phone: phoneNumber,
+          address,
+          deliveryMethod,
+          ...(deliveryMethod === 'shipping' && { shippingLocation: selectedShippingLocation, shippingFee: getShippingFee() }),
         }),
       });
 
@@ -164,9 +199,9 @@ const CartView: React.FC = () => {
       }
 
       const data = await response.json();
-      const paystackUrl = data.checkoutUrl; // Assuming the Paystack URL is in data.data.paymentUrl
+      const paystackUrl = data.checkoutUrl;
       if (paystackUrl) {
-        window.location.href = paystackUrl; // Redirect to Paystack URL
+        window.location.href = paystackUrl;
       } else {
         throw new Error('No payment URL received from the server');
       }
@@ -203,6 +238,9 @@ const CartView: React.FC = () => {
       </div>
     );
   }
+
+  const isShippingEnabled = store.shipping?.enabled && store.shipping?.locations?.length > 0;
+  const isPickupEnabled = store.pickup?.enabled;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -299,14 +337,107 @@ const CartView: React.FC = () => {
 
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Order Summary</h3>
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-sm sm:text-base text-gray-600">Subtotal ({getTotalItems()} items)</span>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm sm:text-base text-gray-500 font-normal">
+                  Subtotal ({getTotalItems()} items)
+                </span>
                 <span className="text-sm sm:text-base font-semibold text-gray-900">
                   {formatPrice(getTotalPrice())}
                 </span>
               </div>
+              {formData.deliveryMethod === 'shipping' && (
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-sm sm:text-base text-gray-500 font-normal">Shipping Fee</span>
+                  <span className="text-sm sm:text-base font-semibold text-gray-900">
+                    {formatPrice(getShippingFee())}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm sm:text-base text-gray-600 font-semibold">Total</span>
+                <span className="text-sm sm:text-base font-semibold text-gray-900">
+                  {formatPrice(getTotalPrice() + getShippingFee())}
+                </span>
+              </div>
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Checkout</h3>
               <div className="space-y-4">
+                {(isShippingEnabled || isPickupEnabled) && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Method</label>
+                    <div className="flex gap-4">
+                      {isPickupEnabled && (
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="deliveryMethod"
+                            value="pickup"
+                            checked={formData.deliveryMethod === 'pickup'}
+                            onChange={handleInputChange}
+                            className="text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span className="text-sm text-gray-700">Pickup</span>
+                        </label>
+                      )}
+                      {isShippingEnabled && (
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="deliveryMethod"
+                            value="shipping"
+                            checked={formData.deliveryMethod === 'shipping'}
+                            onChange={handleInputChange}
+                            className="text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span className="text-sm text-gray-700">Shipping</span>
+                        </label>
+                      )}
+                    </div>
+                    {formData.deliveryMethod === 'pickup' && store.pickup?.note && (
+                      <p className="text-sm text-gray-600 mt-2">{store.pickup.note}</p>
+                    )}
+                  </div>
+                )}
+                {formData.deliveryMethod === 'shipping' && isShippingEnabled && (
+                  <div ref={dropdownRef}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Location</label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        className="w-full text-left p-3 rounded-md border border-gray-300 bg-white text-sm text-gray-900 shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        aria-expanded={isDropdownOpen}
+                        aria-haspopup="listbox"
+                        style={{ borderColor: store.secondaryColor }}
+                      >
+                        <span>
+                          {formData.selectedShippingLocation || 'Select a location'}
+                        </span>
+                        <ChevronDown
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
+                          style={{ color: store.secondaryColor }}
+                        />
+                      </button>
+                      {isDropdownOpen && (
+                        <ul
+                          className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto focus:outline-none"
+                          role="listbox"
+                        >
+                          {store.shipping?.locations.map((location) => (
+                            <li
+                              key={location.area}
+                              className="px-3 py-2 text-sm text-gray-900 hover:bg-gray-100 cursor-pointer"
+                              onClick={() => handleShippingLocationSelect(location.area)}
+                              role="option"
+                              aria-selected={formData.selectedShippingLocation === location.area}
+                            >
+                              {location.area} ({formatPrice(location.fee)}) {location.note ? `- ${location.note}` : ''}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
                     Full Name
@@ -401,7 +532,7 @@ const CartView: React.FC = () => {
         )}
       </section>
 
-      <Footer store={store}/>
+      <Footer store={store} />
     </div>
   );
 };
