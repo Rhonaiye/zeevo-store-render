@@ -1,4 +1,3 @@
-
 'use client';
 import { motion } from 'framer-motion';
 import { Loader2, User, Mail, Camera, Crown, ArrowUpRight, Check, X, CreditCard, Ban as Bank, Plus, Trash2, ChevronDown } from 'lucide-react';
@@ -40,6 +39,7 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification })
     isSubmitting: false,
   });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false); // State for verification loader
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isFreePlan = userProfile?.subscription?.plan?.toLowerCase() === 'free';
@@ -202,8 +202,53 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification })
     }
   };
 
+  // Handle sending verification link
+  const handleSendVerificationLink = async (accountId: string) => {
+    const token = Cookies.get('token');
+    if (!token && addNotification) {
+      addNotification('Please login to access this feature', 'error');
+      return;
+    }
+
+    setIsVerifying(true);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/request-verify-payout-account`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ payoutAccountId: accountId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        addNotification?.('Verification link sent to your email', 'success');
+      } else {
+        addNotification?.(data.message || 'Failed to send verification link', 'error');
+      }
+    } catch (error) {
+      console.error('Error sending verification link:', error);
+      addNotification?.('Failed to send verification link', 'error');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6">
+    <div className="relative bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6">
+      {/* Fullscreen Loader */}
+      {isVerifying && (
+        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="flex flex-col items-center">
+            <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mb-4" />
+            <p className="text-lg font-medium text-gray-800">Sending verification link...</p>
+          </div>
+        </div>
+      )}
+
       <div className="mb-4 sm:mb-6">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Account Settings</h2>
         <p className="text-xs text-gray-600 mt-1">Manage your account information and preferences</p>
@@ -303,7 +348,7 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification })
                     </ul>
                   </div>
                   <div className="mt-3 sm:mt-0">
-                    <h4 className="font-medium text-purple-700 mb-2">Pro Plan</h4>
+                    <h4 className="font-medium text-indigo-700 mb-2">Pro Plan</h4>
                     <ul className="space-y-1">
                       <li className="flex items-center gap-2">
                         <Check className="w-3 h-3 text-green-500 flex-shrink-0" />
@@ -311,7 +356,7 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification })
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="w-3 h-3 text-green-500 flex-shrink-0" />
-                        <span className="text-gray-600">Store can be toggle to public</span>
+                        <span className="text-gray-600">Store can be toggled to public</span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="w-3 h-3 text-green-500 flex-shrink-0" />
@@ -454,7 +499,7 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification })
                           <p className="text-sm font-medium text-gray-800 truncate">{account.accountName}</p>
                           <span
                             className={`text-xs px-2 py-1 rounded-full font-medium ${
-                              account.status === 'active'
+                              account.status === 'verified'
                                 ? 'bg-green-100 text-green-700'
                                 : account.status === 'pending'
                                 ? 'bg-yellow-100 text-yellow-700'
@@ -469,12 +514,25 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification })
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleDeletePayoutAccount(account._id)}
-                      className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-all duration-200 self-end sm:self-center"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2 self-end sm:self-center">
+                      {account.status === 'pending' && (
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleSendVerificationLink(account._id)}
+                          className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 font-medium text-sm transition-all duration-200 flex items-center gap-2"
+                        >
+                          <Mail className="w-4 h-4" />
+                          Verify
+                        </motion.button>
+                      )}
+                      <button
+                        onClick={() => handleDeletePayoutAccount(account._id)}
+                        className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-all duration-200"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
