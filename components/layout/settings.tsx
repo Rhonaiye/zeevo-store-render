@@ -19,7 +19,7 @@ interface PayoutAccount {
   accountNumber: string;
   bankName: string;
   bankCode: string;
-  status: 'pending' | 'active' | 'suspended';
+  status: 'pending' | 'verified' | 'suspended';
   createdAt: string;
   isDefault: boolean;
   updatedAt: string;
@@ -80,7 +80,12 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification })
   // Set payout accounts from userProfile
   useEffect(() => {
     if (!isLoading && userProfile?.wallet?.payoutAccounts) {
-      setPayoutAccounts(userProfile.wallet.payoutAccounts);
+      setPayoutAccounts(
+        userProfile.wallet.payoutAccounts.map((account: any) => ({
+          ...account,
+          status: account.status === 'active' ? 'verified' : account.status,
+        }))
+      );
     }
   }, [isLoading, userProfile]);
 
