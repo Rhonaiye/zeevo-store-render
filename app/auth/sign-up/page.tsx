@@ -80,7 +80,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-white px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen flex items-center justify-center bg-[#DCFEDE] px-4 sm:px-6 lg:px-8">
       <div className="flex w-full max-w-7xl mx-auto items-center flex-col lg:flex-row">
         {/* Sidebar for lg screens */}
         <div className="hidden lg:block lg:w-1/2 pr-12">
@@ -91,20 +91,20 @@ export default function RegisterPage() {
             className="space-y-6"
           >
             <h2 className="text-4xl font-extrabold text-gray-900">
-              Welcome to <span className="text-indigo-600">Zeevo</span>
+              Welcome to <span className="text-[#03E525]">Zeevo</span>
             </h2>
             <p className="text-lg text-gray-600">
               Zeevo is your ultimate e-commerce store builder and inventory management platform. We empower businesses to create stunning online stores and manage their inventory with ease, helping you grow your online presence effortlessly.
             </p>
             <ul className="space-y-4 text-gray-600">
               <li className="flex items-center gap-2">
-                <span className="text-indigo-600">✓</span> Build beautiful online stores
+                <span className="text-[#03E525]">✓</span> Build beautiful online stores
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-indigo-600">✓</span> Streamlined inventory management
+                <span className="text-[#03E525]">✓</span> Streamlined inventory management
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-indigo-600">✓</span> Boost your online presence
+                <span className="text-[#03E525]">✓</span> Boost your online presence
               </li>
             </ul>
           </motion.div>
@@ -120,7 +120,7 @@ export default function RegisterPage() {
           {!isVerifying ? (
             <>
               <h1 className="text-3xl sm:text-2xl font-extrabold text-gray-900 text-center mb-6">
-                Create Your <span className="text-indigo-600">Zeevo</span> Account
+                Create Your <span className="text-[#03E525]">Zeevo</span> Account
               </h1>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -132,7 +132,7 @@ export default function RegisterPage() {
                     value={form.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none bg-white text-base sm:text-sm text-gray-900 placeholder-gray-400"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#037834] 0 focus:outline-none bg-white text-base sm:text-sm text-gray-900 placeholder-gray-400"
                     placeholder="John Doe"
                   />
                 </div>
@@ -145,7 +145,7 @@ export default function RegisterPage() {
                     value={form.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none bg-white text-base sm:text-sm text-gray-900 placeholder-gray-400"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#037834] focus:outline-none bg-white text-base sm:text-sm text-gray-900 placeholder-gray-400"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -158,7 +158,7 @@ export default function RegisterPage() {
                     value={form.password}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none bg-white text-base sm:text-sm text-gray-900 placeholder-gray-400"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#037834] focus:outline-none bg-white text-base sm:text-sm text-gray-900 placeholder-gray-400"
                     placeholder="••••••••"
                   />
                 </div>
@@ -171,9 +171,9 @@ export default function RegisterPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-indigo-600 text-white py-2 rounded-full hover:bg-indigo-700 transition disabled:opacity-50 flex items-center justify-center gap-2 text-lg sm:text-base font-medium"
+                    className="w-full bg-[#037834] text-white py-2 rounded-full hover:bg-[#037834]/90 transition disabled:opacity-50 flex items-center justify-center gap-2 text-lg sm:text-base font-medium"
                   >
-                    {loading ? 'Signing up...' : 'Sign Up'}
+                    {loading ? 'Creating Account...' : 'Create Account'}
                     {!loading && <ArrowRight className="w-4 h-4" />}
                   </button>
                 </motion.div>
@@ -205,7 +205,7 @@ export default function RegisterPage() {
 
               <p className="mt-4 text-center text-sm sm:text-xs text-gray-600">
                 Already have an account?{' '}
-                <Link href="/auth/login" className="text-indigo-600 font-medium hover:text-indigo-700 transition">
+                <Link href="/auth/login" className="text-[#037834] font-medium hover:text-[#037834]/50 transition">
                   Sign In
                 </Link>
               </p>

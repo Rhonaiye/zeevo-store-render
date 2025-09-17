@@ -62,7 +62,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-white px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen flex items-center justify-center bg-[#DCFEDE] px-4 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -70,7 +70,7 @@ export default function LoginPage() {
         className="w-full max-w-md bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-gray-100"
       >
         <h2 className="text-3xl sm:text-2xl font-extrabold text-gray-900 text-center mb-6">
-          Sign In to <span className="text-indigo-600">Zeevo</span>
+          Sign In to <span className="text-[#03E525]">Zeevo</span>
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -81,7 +81,7 @@ export default function LoginPage() {
               type="email"
               onChange={handleChange}
               value={formData.email}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none bg-white text-base sm:text-sm text-gray-900 placeholder-gray-400"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#037834] focus:outline-none bg-white text-base sm:text-sm text-gray-900 placeholder-gray-400"
               placeholder="you@example.com"
               required
             />
@@ -94,7 +94,7 @@ export default function LoginPage() {
               type="password"
               onChange={handleChange}
               value={formData.password}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none bg-white text-base sm:text-sm text-gray-900 placeholder-gray-400"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#037834] focus:outline-none bg-white text-base sm:text-sm text-gray-900 placeholder-gray-400"
               placeholder="••••••••"
               required
             />
@@ -108,7 +108,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 text-white py-2 rounded-full hover:bg-indigo-700 transition disabled:opacity-50 flex items-center justify-center gap-2 text-lg sm:text-base font-medium"
+              className="w-full bg-[#037834] text-white py-2 rounded-full hover:bg-[#037834]/90 transition disabled:opacity-50 flex items-center justify-center gap-2 text-lg sm:text-base font-medium"
             >
               {loading ? 'Logging in...' : 'Sign In'}
               {!loading && <ArrowRight className="w-4 h-4" />}
@@ -142,7 +142,7 @@ export default function LoginPage() {
 
         <p className="mt-4 text-center text-sm sm:text-xs text-gray-600">
           Don’t have an account?{' '}
-          <Link href="/auth/sign-up" className="text-indigo-600 font-medium hover:text-indigo-700 transition">
+          <Link href="/auth/sign-up" className="text-[#037834] font-medium hover:text-[#037834]/70 transition">
             Sign Up
           </Link>
         </p>
