@@ -52,7 +52,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [setActiveSection, navItems]);
 
-
   const handleNavClick = useCallback((itemId: string) => {
     setActiveSection(itemId);
     setCookie('lastActiveSection', itemId, 30); // Save for 30 days
@@ -73,23 +72,23 @@ const Sidebar: React.FC<SidebarProps> = ({
             className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
             onClick={toggleSidebar}
           />
-          
+
           <motion.aside
             ref={sidebarRef}
             initial={{ x: -256 }}
             animate={{ x: 0 }}
             exit={{ x: -256 }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="fixed inset-y-0 left-0 w-64 bg-white shadow-xl border-r border-gray-200 z-50"
+            className="fixed inset-y-0 left-0 w-64 bg-[#F7FFF7] shadow-xl border-r border-gray-200 z-50"
             role="navigation"
             aria-label="Main navigation"
           >
             <div className="flex flex-col h-full">
               {/* Header */}
               <header className="px-4 pb-4 border-b border-gray-100 flex justify-between items-center">
-                <div>
-                  <Image width={80} height={80} src={'/zeevo.png'} alt='Zeevo logo' className='w-[12vh] sm:w-[10vh]'/>
-                  <p className="text-base sm:text-sm font-medium text-gray-600">Your store builder</p>
+                <div className='flex items-center flex-col mt-8 pr-12 pl-5 py-1 rounded-lg bg-[#C5FEC9]' >
+                  <p className='self-start text-[#03E525] text-xl'>zeevo</p>
+                  <p className="text-xs sm:text-xs xl:text-xs font-medium text-gray-600 italic">Your store builder</p>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -101,7 +100,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <X className="w-6 h-6 sm:w-5 sm:h-5" />
                 </motion.button>
               </header>
-              
+
               {/* Navigation */}
               <nav className="flex-1 p-4" role="navigation">
                 <ul className="space-y-1" role="list">
@@ -113,24 +112,36 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onClick={() => handleNavClick(item.id)}
                         className={`w-full flex items-center gap-3 px-3 py-3 sm:py-2.5 text-base sm:text-sm font-medium rounded-lg transition-all ${
                           activeSection === item.id
-                            ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-600 shadow-sm'
-                            : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700'
+                            ? 'bg-[#069A46] text-white shadow-sm'
+                            : 'text-gray-700 hover:bg-[#069A46]/10 '
                         }`}
                         aria-current={activeSection === item.id ? 'page' : undefined}
                       >
-                        <item.icon className="w-5 h-5 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <div
+                          className={`p-1.5 rounded-full relative flex items-center justify-center ${
+                            activeSection === item.id
+                              ? 'bg-white text-[#069A46]'
+                              : 'bg-[#069A46] text-white'
+                          }`}
+                        >
+
+
+                          <item.icon
+                            className="w-5 h-5 sm:w-4 sm:h-4 relative"
+                          />
+                        </div>
                         <span>{item.name}</span>
                       </motion.button>
                     </li>
                   ))}
                 </ul>
               </nav>
-              
+
               {/* Store Counter */}
               {(userProfile?.stores?.length || 0) > 0 && (
-                <div className="p-4 border-t border-gray-100 bg-gray-50/50">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="p-4 border-t border-gray-100 ">
+                  <div className="flex items-center justify-between bg-[#C4FEC8] p-3 rounded-lg">
+                    <div className=''>
                       <div className="text-sm sm:text-xs font-medium text-gray-600 uppercase tracking-wide">
                         Your Store
                       </div>
@@ -138,13 +149,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                         {userProfile?.stores?.length || 0}/1 store
                       </div>
                     </div>
-                    <div className="w-10 h-10 sm:w-8 sm:h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 sm:w-8 sm:h-8 bg-white text-[#03E525] rounded-full flex items-center justify-center">
                       <Store className="w-5 h-5 sm:w-4 sm:h-4" />
                     </div>
                   </div>
                 </div>
               )}
-              
+
               {/* Logout */}
               <footer className="p-4 border-t border-gray-100">
                 <motion.button
