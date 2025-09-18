@@ -150,21 +150,7 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
     router.push('/dashboard/pricing');
   };
 
-  // Full-screen loader component
-  const FullScreenLoader = () => (
-    <motion.div
-      variants={overlayVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-    >
-      <div className="flex flex-col items-center space-y-4">
-        <Loader2 className="w-12 h-12 text-white animate-spin" />
-        <p className="text-white text-lg font-medium">Processing Upgrade...</p>
-      </div>
-    </motion.div>
-  );
+
 
   // Loading state component
   const LoadingState = () => (
@@ -175,36 +161,34 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
 
   // Quick stats grid
   const QuickStatsGrid = () => (
-    <motion.div
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"
-      variants={staggerContainer}
-      initial="initial"
-      animate="animate"
-    >
-      {quickStats.map((stat, index) => (
-        <motion.div
-          key={`stat-${index}`}
-          variants={fadeInUp}
-          transition={{ delay: index * 0.1 }}
-          className="group bg-white rounded-lg border border-gray-100 p-4 hover:shadow-lg hover:border-indigo-100 transition-all duration-300"
-        >
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{stat.label}</p>
-              <p className="text-xl font-semibold text-gray-900 group-hover:text-indigo-500 transition-colors duration-200">
-                {stat.value}
-              </p>
-            </div>
-            {stat.change && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-green-600 bg-green-50">
-                {stat.change}
-              </span>
-            )}
+  <motion.div
+    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"
+    variants={staggerContainer}
+    initial="initial"
+    animate="animate"
+  >
+    {quickStats.map((stat, index) => (
+      <motion.div
+        key={`stat-${index}`}
+        variants={fadeInUp}
+        transition={{ delay: index * 0.1 }}
+        className="group bg-transparent rounded-lg border border-[#2FDD4C] p-4  transition-all duration-300"
+      >
+        <div className="flex justify-between items-start">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-1 sm:space-y-0">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {stat.label}
+            </p>
+            <p className="text-xl font-semibold text-gray-900 transition-colors duration-200">
+              {stat.value}
+            </p>
           </div>
-        </motion.div>
-      ))}
-    </motion.div>
-  );
+        </div>
+      </motion.div>
+    ))}
+  </motion.div>
+);
+
 
   // Store status component
   const StoreStatus = () => (
@@ -233,11 +217,11 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
           </div>
         </div>
       ) : (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-4 border border-amber-100">
+        <div className="bg-[#DCFEDE] rounded-lg p-4 ">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-amber-100 rounded-md">
-                <Store className="w-4 h-4 text-amber-500" />
+              <div className="p-2 bg-[#069A46] rounded-full">
+                <Store className="w-4 h-4 text-white" />
               </div>
               <div>
                 {!firstStore?.isPublished ? (
@@ -261,7 +245,7 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
                 ) : (
                   <>
                     <h3 className="text-sm font-semibold text-amber-900">Your store is live!</h3>
-                    <p className="text-xs text-amber-600">Your store is publicly visible and ready for customers.</p>
+                    <p className="text-xs text-[#03E525]">Your store is publicly visible and ready for customers.</p>
                   </>
                 )}
               </div>
@@ -270,7 +254,7 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => openStoreInNewTab(firstStore)}
-              className="bg-amber-500 text-white px-3 py-1.5 rounded-md font-medium text-xs hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1 transition-colors duration-150 flex items-center space-x-1 w-full sm:w-auto justify-center"
+              className="bg-gradient-to-r from-[#06A841] to-[#04D32D] text-white px-3 py-1.5 rounded-md font-medium text-xs hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1 transition-colors duration-150 flex items-center space-x-1 w-full sm:w-auto justify-center"
               aria-label="View live store in a new tab"
             >
               <ArrowUpRight className="w-3 h-3" />
@@ -285,66 +269,79 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
 
 
   // Action cards sections
-  const ActionCardsSection = () => (
-    <div className="mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
-        <span className="text-xs text-gray-500">Choose your next step</span>
-      </div>
-      <motion.div
-        className="grid grid-cols-1 lg:grid-cols-2 gap-4"
-        variants={staggerContainer}
-        initial="initial"
-        animate="animate"
-      >
-        {actionCards.map((card, index) => {
-          const isDisabled = card.status === 'disabled' || card.status === 'coming-soon';
-          const isPreviewCard = card.id === 'preview';
-          const isManageCard = card.id === 'manage';
-          
-          return (
-            <motion.div
-              key={card.id}
-              variants={fadeInUp}
-              transition={{ delay: index * 0.1 }}
-              className="group bg-white rounded-lg border border-gray-100 p-4 hover:shadow-md hover:border-indigo-100 transition-all duration-300"
-            >
-              <div className="flex items-start space-x-3">
-                <div className="p-2 bg-gray-50 group-hover:bg-indigo-50 rounded-md transition-colors duration-200">
-                  <card.icon className="w-4 h-4 text-gray-600 group-hover:text-indigo-500 transition-colors duration-200" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <h3 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-500 transition-colors duration-200">
-                      {card.title}
-                    </h3>
-                    {getStatusIcon(card.status)}
-                  </div>
-                  <p className="text-xs text-gray-600 mb-3 leading-relaxed">{card.description}</p>
-                  <motion.button
-                    whileHover={{ scale: isDisabled ? 1 : 1.05 }}
-                    whileTap={{ scale: isDisabled ? 1 : 0.95 }}
-                    onClick={() => {
-                      console.log('RenderDashboard: Button clicked for card:', card.id);
-                      handleActionCardClick(card);
-                    }}
-                    disabled={isDisabled}
-                    className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 ${getButtonStyle(card)}`}
-                    aria-label={getButtonAriaLabel(card)}
-                  >
-                    {(isManageCard || isPreviewCard) && (
-                      <ArrowUpRight className="w-3 h-3 mr-1" />
-                    )}
-                    <span>{getButtonText(card)}</span>
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
-      </motion.div>
+ const ActionCardsSection = () => (
+  <div className="mb-6">
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
+      <span className="text-xs text-gray-500">Choose your next step</span>
     </div>
-  );
+    <motion.div
+      className="grid grid-cols-1 lg:grid-cols-5 gap-4"
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
+    >
+      {actionCards.map((card, index) => {
+        const isDisabled =
+          card.status === "disabled" || card.status === "coming-soon";
+        const isPreviewCard = card.id === "preview";
+        const isManageCard = card.id === "manage";
+
+        // First card (60%), Second card (40%), Last card (60%), the one before last (40%)
+        let colSpan = "lg:col-span-2"; // default (40%)
+        if (index === 0 || index === actionCards.length - 1) {
+          colSpan = "lg:col-span-3"; // 60%
+        }
+
+        return (
+          <motion.div
+            key={card.id}
+            variants={fadeInUp}
+            transition={{ delay: index * 0.1 }}
+            className={`group bg-transparent border border-gray-100 rounded-lg  p-3  transition-all duration-300 ${colSpan}`}
+          >
+            <div className="flex items-start space-x-3">
+              <div className="p-2 bg-[#069A46]  rounded-full transition-colors duration-200">
+                <card.icon className="w-4 h-4 text-white  transition-colors duration-200" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center space-x-2 mb-1">
+                  <h3 className="text-sm font-semibold text-gray-900 transition-colors duration-200">
+                    {card.title}
+                  </h3>
+                </div>
+                <p className="text-xs text-gray-600 mb-2 leading-relaxed">
+                  {card.description}
+                </p>
+                <motion.button
+                  whileHover={{ scale: isDisabled ? 1 : 1.05 }}
+                  whileTap={{ scale: isDisabled ? 1 : 0.95 }}
+                  onClick={() => {
+                    console.log(
+                      "RenderDashboard: Button clicked for card:",
+                      card.id
+                    );
+                    handleActionCardClick(card);
+                  }}
+                  disabled={isDisabled}
+                  className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 ${getButtonStyle(
+                    card
+                  )}`}
+                  aria-label={getButtonAriaLabel(card)}
+                >
+                  {(isManageCard || isPreviewCard) && (
+                    <ArrowUpRight className="w-3 h-3 mr-1 text-[#41DD60]" />
+                  )}
+                  <span className=''>{getButtonText(card)}</span>
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
+    </motion.div>
+  </div>
+);
 
   // Helper functions for button text and aria labels
   const getButtonText = (card: ActionCard): string => {
@@ -373,7 +370,7 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
   const HelpSection = () => (
     <motion.div
       variants={fadeIn}
-      className="bg-white rounded-lg border border-gray-100 p-4 shadow-sm"
+      className="bg-transparent rounded-lg border border-gray-100  p-4 shadow-lg"
     >
       <div className="flex items-center space-x-2 mb-3">
         <HelpCircle className="w-4 h-4 text-indigo-500" />

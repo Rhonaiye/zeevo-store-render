@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import {
   Home, Store, Settings, Plus, Edit3, Eye, BarChart3, Loader2, Package, Menu,
   CheckCircle, Clock, ShoppingCart,
-  Wallet
+  Wallet, User
 } from 'lucide-react';
 import Image from 'next/image';
 import RenderDashboard from '@/components/layout/dashboard';
@@ -172,10 +172,10 @@ const Dashboard: React.FC = () => {
   };
 
   const getButtonStyle = (card: ActionCard) => {
-    return card.status === 'disabled' ? 'bg-gray-200 text-gray-400 cursor-not-allowed' :
+    return card.status === 'disabled' ? 'bg-[#F80101] text-white cursor-not-allowed' :
            card.status === 'coming-soon' ? 'bg-amber-100 text-amber-700 cursor-not-allowed' :
            card.primary ? 'bg-indigo-600 text-white hover:bg-indigo-700' :
-           'bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-50';
+           'bg-transparent border border-[#41DD60] text-[#41DD60] hover:bg-[#F3FFF4]/5';
   };
 
   const toggleSidebar = () => {
@@ -260,7 +260,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-[#F3FFF4] flex items-center justify-center">
       {isLoading ? (
         <motion.div
           initial={{ opacity: 0 }}
@@ -318,7 +318,7 @@ const Dashboard: React.FC = () => {
             navItems={navItems}
           />
           <main className="flex-1 p-3 max-w-6xl mx-auto lg:ml-64 relative">
-            <header className="bg-white shadow border-b mb-4 rounded-xl w-full top-2 z-10">
+            <header className="bg-[#F7FFF7] shadow border-b mb-4 rounded-xl w-full top-2 z-10">
               <div className="px-4 py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <div className="flex items-center gap-2">
                   <motion.button
@@ -328,16 +328,10 @@ const Dashboard: React.FC = () => {
                   >
                     <Menu className="w-5 h-5" />
                   </motion.button>
-                  <Image
-                    width={70}
-                    height={70}
-                    src="/zeevo.png"
-                    alt="Platform Logo"
-                    className="h-16 w-auto sm:h-10"
-                  />
+                  <User className="w-6 h-6 text-gray-600 hidden sm:block mr-3" />
                   <div>
-                    <h1 className="text-base sm:text-lg font-bold text-gray-900">
-                      {activeSection === 'dashboard' ? `Welcome, ${userProfile?.name || 'User'}!` :
+                    <h1 className="text-base sm:text-lg font-bold text-[#585555]">
+                      {activeSection === 'dashboard' ? `Welcome, ${userProfile?.name?.split(" ")[0] || 'User'}!` :
                        activeSection === 'store' ? 'Manage Store' :
                        activeSection === 'analytics' ? 'Manage Analytics' :
                        activeSection === 'products' ? 'Manage Products' :
@@ -357,9 +351,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-left sm:text-right text-xs sm:text-sm">
-                  <p className="font-semibold text-gray-800 hidden sm:block">
-                    {userProfile?.email || 'N/A'}
-                  </p>
+                 notif
                 </div>
               </div>
             </header>
