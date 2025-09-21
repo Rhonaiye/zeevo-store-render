@@ -250,30 +250,30 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({ addNotificati
       className="min-h-screen p-2 sm:p-3"
     >
       {/* Header */}
-      <motion.div className="bg-white rounded-lg p-3 sm:p-4 mb-3 sm:mb-4 shadow-sm">
+      <motion.div className="bg-[#C4FEC8] rounded-lg p-3 sm:p-4 mb-3 sm:mb-4 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="p-1 sm:p-1.5 bg-indigo-500 rounded-md">
+              <div className="p-1 sm:p-1.5 bg-[#03E525] rounded-md">
                 <Package className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
               </div>
               <div>
-                <h1 className="text-sm sm:text-base font-semibold text-gray-800">Product Management</h1>
-                <p className="text-xs text-gray-600 hidden sm:block">Manage your store's inventory</p>
+                <h1 className="text-sm sm:text-base font-semibold text-[#03E525]">Product Management</h1>
+                <p className="text-xs text-[#03E525] hidden sm:block">Manage your store's inventory</p>
               </div>
             </div>
             {store && (
               <div className="flex gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
-                <div className="bg-white border border-gray-200 rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1">
+                <div className="bg-[#069A46]  rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1">
                   <div className="flex items-center gap-1">
-                    <TrendingUp className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-indigo-500" />
-                    <span className="text-xs font-medium text-gray-700">{localProducts.length} Products</span>
+                    <TrendingUp className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
+                    <span className="text-xs font-medium">{localProducts.length} Products</span>
                   </div>
                 </div>
-                <div className="bg-white border border-gray-200 rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1">
+                <div className="bg-[#069A46]  rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1">
                   <div className="flex items-center gap-1">
-                    <Star className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-indigo-500" />
-                    <span className="text-xs font-medium text-gray-700">
+                    <Star className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
+                    <span className="text-xs font-medium ">
                       {localProducts.filter(p => p.isAvailable).length} Available
                     </span>
                   </div>
@@ -300,7 +300,7 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({ addNotificati
                 setEditingProductId(null);
                 setShowProductForm(true);
               }}
-              className="bg-indigo-500 text-white px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-medium hover:bg-indigo-600 transition-colors w-full sm:w-auto"
+              className="bg-gradient-to-b from-[#069F44] to-[#04DB2A] shadow-md text-white px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-medium hover:bg-indigo-600 transition-colors w-full sm:w-auto"
             >
               <div className="flex items-center justify-center gap-1 sm:gap-1.5">
                 <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -369,10 +369,12 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({ addNotificati
                 >
                   <div className="flex items-center gap-2 sm:gap-3 flex-1">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white border border-gray-200 rounded-md flex items-center justify-center">
-                      <Package className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                      {product.images && product.images.length > 0 ? (
+                        <img src={product?.images[0]} alt="" />
+                      ): null}
                     </div>
                     <div className="flex-1 space-y-0.5 sm:space-y-1">
-                      <h4 className="font-medium text-gray-800 text-xs sm:text-sm group-hover:text-indigo-500 transition-colors">
+                      <h4 className="font-medium text-[#585555] text-xs sm:text-sm  transition-colors">
                         {product.name}
                       </h4>
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-gray-600">
@@ -380,7 +382,7 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({ addNotificati
                           {store.currency || 'USD'} {product.price.toFixed(2)}
                         </span>
                         {product.discountPrice && product.discountPrice > 0 && (
-                          <span className="text-indigo-500 font-medium">
+                          <span className="text-[#04D22E] font-medium">
                             Discount: {store.currency || 'USD'} {product.discountPrice.toFixed(2)}
                           </span>
                         )}
@@ -397,7 +399,7 @@ const RenderProductsManagement: React.FC<RenderProductsProps> = ({ addNotificati
                       <button
                         onClick={() => toggleProductAvailability(product._id, product.isAvailable)}
                         className={`relative inline-flex h-4 w-7 sm:h-5 sm:w-9 items-center rounded-full transition-colors ${
-                          product.isAvailable ? 'bg-indigo-500' : 'bg-gray-300'
+                          product.isAvailable ? 'bg-gradient-to-b from-[#069F44] to-[#04DB2A]' : 'bg-gray-300'
                         }`}
                       >
                         <span

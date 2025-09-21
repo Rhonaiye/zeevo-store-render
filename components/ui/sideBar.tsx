@@ -55,6 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const handleNavClick = useCallback((itemId: string) => {
     setActiveSection(itemId);
     setCookie('lastActiveSection', itemId, 30); // Save for 30 days
+    window.scrollTo(0, 0); // Scroll to top
     if (window.innerWidth < 1024) {
       toggleSidebar();
     }
@@ -112,7 +113,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onClick={() => handleNavClick(item.id)}
                         className={`w-full flex items-center gap-3 px-3 py-3 sm:py-2.5 text-base sm:text-sm font-medium rounded-lg transition-all ${
                           activeSection === item.id
-                            ? 'bg-[#069A46] text-white shadow-sm'
+                            ? 'bg-gradient-to-b from-[#069F44] to-[#04DB2A] text-white shadow-sm'
                             : 'text-gray-700 hover:bg-[#069A46]/10 '
                         }`}
                         aria-current={activeSection === item.id ? 'page' : undefined}
@@ -124,8 +125,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                               : 'bg-[#069A46] text-white'
                           }`}
                         >
-
-
                           <item.icon
                             className="w-5 h-5 sm:w-4 sm:h-4 relative"
                           />

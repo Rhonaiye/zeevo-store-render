@@ -134,7 +134,7 @@ const Dashboard: React.FC = () => {
     { id: 'store', name: 'My Store', icon: Store },
     { id: 'products', name: 'Products', icon: Package },
     { id: 'orders', name: 'Orders', icon: ShoppingCart },
-    { id: 'zeevo_wallet', name: 'Zeevo Wallet', icon: Wallet },
+   
     { id: 'analytics', name: 'Analytics', icon: BarChart3 },
     { id: 'settings', name: 'Settings', icon: Settings },
   ];
@@ -318,7 +318,7 @@ const Dashboard: React.FC = () => {
             navItems={navItems}
           />
           <main className="flex-1 p-3 max-w-6xl mx-auto lg:ml-64 relative">
-            <header className="bg-[#F7FFF7] shadow border-b mb-4 rounded-xl w-full top-2 z-10">
+            <header className="bg-[#C4FEC8]/20 border-b mb-4 rounded-xl w-full top-2 z-10">
               <div className="px-4 py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <div className="flex items-center gap-2">
                   <motion.button

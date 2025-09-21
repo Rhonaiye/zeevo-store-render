@@ -210,11 +210,11 @@ export default function OrdersManagement() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8"
+          className="bg-gradient-to-b from-[#069F44] to-[#04DB2A] rounded-lg border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8"
         >
           <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
-            <h3 className="text-sm sm:text-base md:text-sm font-semibold text-black">Filter Orders</h3>
+            <Filter className="w-4 h-4 md:w-5 md:h-5 text-white" />
+            <h3 className="text-sm sm:text-base md:text-sm font-semibold text-white">Filter Orders</h3>
           </div>
           
           <div className="flex flex-wrap gap-2">
@@ -233,14 +233,14 @@ export default function OrdersManagement() {
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm md:text-xs font-medium transition-all ${
                     statusFilter === key
                       ? key === 'all' 
-                        ? 'bg-black text-white'
+                        ? 'bg-[#069A46] text-white'
                         : key === 'completed'
-                        ? 'bg-indigo-600 text-white'
+                        ? 'bg-[#069A46] text-white'
                         : key === 'paid'
-                        ? 'bg-green-600 text-white'
+                        ? 'bg-[#069A46] text-white'
                         : key === 'pending'
                         ? 'bg-gray-600 text-white'
-                        : 'bg-black text-white'
+                        : 'bg-red-400 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -286,7 +286,7 @@ export default function OrdersManagement() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-all duration-300 group"
+              className="bg-white rounded-lg  hover:border-indigo-300 transition-all duration-300 group"
             >
               <div className="p-4 sm:p-6">
                 {/* Order Header */}
@@ -336,7 +336,7 @@ export default function OrdersManagement() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleViewOrder(order)}
-                  className="w-full bg-indigo-600 text-white py-2 sm:py-3 px-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 flex items-center justify-center gap-2 font-medium text-xs sm:text-sm md:text-xs"
+                  className="w-full bg-[#C4FEC8] text-[#05A742] py-2 sm:py-3 px-4 rounded-lg hover:bg-[#C4FEC8]/60 transition-all duration-300 flex items-center justify-center gap-2 font-medium text-xs sm:text-sm md:text-xs"
                 >
                   <Eye className="w-3 h-3 sm:w-4 sm:h-4 md:w-3 md:h-3" />
                   View Receipt
@@ -354,7 +354,7 @@ export default function OrdersManagement() {
             transition={{ duration: 0.5 }}
             className="text-center py-12 sm:py-16"
           >
-            <div className="bg-white rounded-lg border border-gray-200 p-8 sm:p-12 max-w-md mx-auto">
+            <div className="bg-white rounded-lg border border-[#63C28B] p-8 sm:p-12 max-w-md mx-auto">
               <Package className="w-12 h-12 sm:w-16 sm:h-16 md:w-12 md:h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg sm:text-xl md:text-lg font-semibold text-black mb-2">
                 {statusFilter === 'all' ? 'No orders yet' : `No ${statusFilter} orders`}

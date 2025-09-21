@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Link, Trash2, Palette, ShoppingBag, Mail, Package, ChevronDown, Instagram, Facebook, Twitter, Edit3, Eye, Image, X, Layout, Type, FileText, Truck, Store as StoreIcon, Loader2, AlertTriangle } from 'lucide-react';
+import { Plus, Link, Trash2, Palette, ShoppingBag, Mail, Package, ChevronDown, Instagram, Facebook, Twitter, Edit3, Eye, Image, X, Layout, Type, FileText, Truck, Store as StoreIcon, Loader2, AlertTriangle, Camera } from 'lucide-react';
 import Cookies from 'js-cookie';
 import DeleteStoreConfirmation from '../ui/deleteStore';
 import StoreForm from './storeForm';
@@ -501,7 +501,7 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
       className="w-full mx-auto p-4 bg-white rounded-2xl shadow-xl"
     >
       {/* Logo Management */}
-      <div className="mb-4 border border-gray-200 rounded-lg p-3 bg-gray-50">
+      <div className="mb-4 border border-[#C5FEC9] rounded-lg p-3 bg-gray-50">
         <div className="flex items-center gap-2 mb-2">
           <Image className="w-4 h-4 text-gray-900" />
           <span className="text-xs font-semibold text-gray-900">Store Logo</span>
@@ -513,14 +513,14 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
               type="file"
               accept="image/png,image/jpeg,image/jpg"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLogoFile(e.target.files?.[0] || null)}
-              className="w-full sm:w-auto px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+              className="w-full sm:w-auto px-3 py-1.5 text-xs border border-[#41FB4E] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-[#9CFBA3] file:text-[#3EBE69] hover:file:bg-[#9CFBA3]/80 cursor-pointer"
               disabled={isSubmitting}
             />
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleLogoUpload}
-              className="w-full sm:w-auto bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50 touch-manipulation"
+              className="w-full sm:w-auto bg-gradient-to-b from-[#069A46] to-[#04DB2A]  text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50 touch-manipulation"
               disabled={isSubmitting || !logoFile}
             >
               {isSubmitting ? (
@@ -530,7 +530,7 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
                 </>
               ) : (
                 <>
-                  <Image className="w-3.5 h-3.5" />
+                  <Camera className="w-3.5 h-3.5" />
                   Upload Logo
                 </>
               )}
@@ -622,11 +622,11 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
             checked={store.isPublished ?? false}
             onChange={() => handleToggleWithConfirmation(store.isPublished ?? false)}
             disabled={isSubmitting}
-            className="sr-only peer"
+            className="sr-only peer "
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
           />
-          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-b from-[#069A46] to-[#04DB2A]"></div>
           <span className="ml-3 text-sm font-medium text-gray-900">{store.isPublished ? 'Public' : 'Private'}</span>
         </label>
         <AnimatePresence>

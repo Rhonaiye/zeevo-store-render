@@ -268,10 +268,10 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification })
         <div className="space-y-4 sm:space-y-6">
           {/* Subscription Plan Section */}
           <div
-            className={`p-3 sm:p-4 rounded-lg border-2 ${
+            className={`p-3 sm:p-4 rounded-lg border-[0.5px] ${
               isFreePlan
                 ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200'
-                : 'bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-200'
+                : 'bg-[#DCFEDE] border-[#03E525]'
             }`}
           >
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0">
@@ -316,14 +316,14 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification })
                   whileTap={{ scale: 0.95 }}
                   onClick={handleUpgrade}
                   disabled={isUpgrading}
-                  className={`bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:from-indigo-700 hover:to-blue-700 font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg w-full sm:w-auto ${
+                  className={`bg-gradient-to-b from-[#069F44] to-[#04DB2A] text-white px-3 sm:px-4 py-2 rounded-lg hover:from-indigo-700 hover:to-blue-700 font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg w-full sm:w-auto ${
                     isUpgrading ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
                   {isUpgrading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Crown className="w-4 h-4" />
+                    ''
                   )}
                   <span className="whitespace-nowrap">{isUpgrading ? 'Processing...' : 'Upgrade to Pro'}</span>
                   {!isUpgrading && <ArrowUpRight className="w-3 h-3" />}
@@ -375,7 +375,7 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification })
           </div>
 
           {/* Payout Accounts Section */}
-          <div className="p-3 sm:p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+          <div className="p-3 sm:p-4 bg-[#DCFEDE] rounded-lg border border-green-200">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -618,7 +618,7 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification })
                       defaultChecked={item.id !== 'marketing_emails'}
                       className="sr-only peer"
                     />
-                    <div className="w-10 h-5 sm:w-11 sm:h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-gray-800"></div>
+                    <div className="w-10 h-5 sm:w-11 sm:h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-gradient-to-b from-[#069F44] to-[#04DB2A]"></div>
                   </label>
                 </div>
               ))}
@@ -630,7 +630,7 @@ const RenderSettings: FC<RenderSettingsProps> = ({ isLoading, addNotification })
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-gray-800 text-white px-4 py-2.5 rounded-lg hover:bg-gray-900 font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto"
+              className="bg-gradient-to-b from-[#069F44] to-[#04DB2A] text-white px-4 py-2.5 rounded-lg hover:bg-gray-900 font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               Save Changes
             </motion.button>
