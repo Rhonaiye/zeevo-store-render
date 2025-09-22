@@ -20,6 +20,7 @@ import Sidebar from '@/components/ui/sideBar';
 import { useAppStore, Analytics, Product, UserProfile, NavItem, ActionCard, QuickStat, FormData, ProductFormData, NotificationData, Store as IStore } from '@/store/useAppStore';
 import OrdersManagement from '@/components/layout/ordersManagement';
 import WalletManagement from '@/components/layout/walletManagement';
+import KYCOnboardingModal from '@/components/layout/kycOnboard';
 
 // Define the Dashboard component without props
 const Dashboard: React.FC = () => {
@@ -308,6 +309,8 @@ const Dashboard: React.FC = () => {
         </motion.div>
       ) : (
         <div className="flex w-full min-h-screen">
+          
+          
           <Sidebar
             isSidebarOpen={isSidebarOpen}
             toggleSidebar={toggleSidebar}
@@ -317,8 +320,11 @@ const Dashboard: React.FC = () => {
             handleLogout={handleLogout}
             navItems={navItems}
           />
-          <main className="flex-1 p-3 max-w-6xl mx-auto lg:ml-64 relative">
-            <header className="bg-[#C4FEC8]/20 border-b mb-4 rounded-xl w-full top-2 z-10">
+           
+          <main className="flex-1 p-3 pb-14 max-w-6xl mx-auto lg:ml-64 relative">
+             <KYCOnboardingModal/>
+            
+            <header className="bg-[#C4FEC8]/20 border-b mb-4 rounded-xl w-full z-10">
               <div className="px-4 py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <div className="flex items-center gap-2">
                   <motion.button
@@ -356,6 +362,7 @@ const Dashboard: React.FC = () => {
               </div>
             </header>
             {renderContent()}
+           
             <div className="space-y-2">
               {notifications.map((notification) => (
                 <Notification
@@ -368,9 +375,13 @@ const Dashboard: React.FC = () => {
                 />
               ))}
             </div>
+           
+            
           </main>
+          
         </div>
       )}
+      
     </div>
   );
 };
