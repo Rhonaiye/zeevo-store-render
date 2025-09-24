@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono, Montserrat, Nunito, Inter, Jost, Saira, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -79,7 +80,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} ${MontserratFont.variable} ${NunitoSans.variable} ${InterFont.variable} ${JostFont.variable} ${SairaFont.variable} ${BricolageFont.variable} antialiased`}>
-        {children}
+       <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+          {children}
+       </GoogleOAuthProvider>
       </body>
     </html>
   );
