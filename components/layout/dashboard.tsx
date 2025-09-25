@@ -330,7 +330,7 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
                   aria-label={getButtonAriaLabel(card)}
                 >
                   {(isManageCard || isPreviewCard) && (
-                    <ArrowUpRight className="w-3 h-3 mr-1 text-[#41DD60]" />
+                    <ArrowUpRight className="w-3 h-3 mr-1 " />
                   )}
                   <span className=''>{getButtonText(card)}</span>
                 </motion.button>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronRight, ChevronLeft, Shield, Check, Phone, Calendar, X } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Shield, Check, Phone, Calendar, X, ArrowRight } from 'lucide-react';
 
 interface BVNData {
   number: string;
@@ -226,12 +226,16 @@ const KYCOnboardingModal: React.FC = () => {
 
   return (
     <div className="flex items-center justify-center">
-      <button
+      <div
         onClick={() => setIsOpen(true)}
-        className="fixed left-0 right-0 rounded-t-2xl bottom-0 w-full z-50 bg-[#16A34A] text-gray-800 px-8 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
+        className="fixed flex items-center justify-between left-0 right-0 rounded-t-2xl bottom-0 w-full z-50 bg-[#16A34A] text-base text-gray-50 px-8  xl:px-16 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
       >
-        Verify your account to start collecting payments in your store
-      </button>
+       <p>Get verified to start accepting customer payments.</p>
+       <button className="hidden  bg-white text-[#16A34A] cursor-pointer px-3 md:flex items-center rounded-md py-1">
+           Start Verification 
+           <ArrowRight className="h-4 w-4 ml-1" />
+        </button>
+      </div>
 
       {isOpen && (
         <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center p-4 z-50">

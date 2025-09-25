@@ -173,9 +173,9 @@ const Dashboard: React.FC = () => {
   };
 
   const getButtonStyle = (card: ActionCard) => {
-    return card.status === 'disabled' ? 'bg-[#F80101] text-white cursor-not-allowed' :
+    return card.status === 'disabled' ? 'bg-gray-300 text-white cursor-not-allowed' :
            card.status === 'coming-soon' ? 'bg-amber-100 text-amber-700 cursor-not-allowed' :
-           card.primary ? 'bg-indigo-600 text-white hover:bg-indigo-700' :
+           card.primary ? 'bg-transparent border border-[#41DD60] text-[#41DD60]' :
            'bg-transparent border border-[#41DD60] text-[#41DD60] hover:bg-[#F3FFF4]/5';
   };
 

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -66,18 +67,44 @@ export default function RegisterPage() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+ const handleGoogleSignIn = async (credentialResponse: any) => {
     setLoading(true);
     setError(null);
+
     try {
-      console.log('Google Sign-In initiated');
-      router.push('/dashboard');
-    } catch (err) {
-      console.error('Google Sign-In error:', err);
-      setError('Google Sign-In failed. Please try again.');
+      if (!credentialResponse || typeof credentialResponse.credential !== "string") {
+        throw new Error("Google credential not ready yet");
+      }
+
+      const idToken = credentialResponse.credential;
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/google-signup`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.message || "Google login failed");
+      }
+
+      Cookies.set("token", data.token);
+      Cookies.set("user", JSON.stringify(data.user));
+
+      router.replace("/dashboard");
+    } catch (err: any) {
+      console.error("Google Sign-In Error:", err);
+      setError(err.message || "Google Sign-In failed");
+    } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#DCFEDE] px-4 sm:px-6 lg:px-8">
@@ -189,18 +216,10 @@ export default function RegisterPage() {
               </div>
 
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <button
-                  onClick={handleGoogleSignIn}
-                  disabled={loading}
-                  className="w-full bg-white text-gray-900 py-2 rounded-full hover:bg-gray-100 transition disabled:opacity-50 flex items-center justify-center gap-2 text-lg sm:text-base font-medium border border-gray-200"
-                >
-                  {loading ? 'Processing...' : 'Continue with Google'}
-                  <img
-                    src="https://www.google.com/favicon.ico"
-                    alt="Google Icon"
-                    className="w-5 h-5"
+                <GoogleLogin
+                   onSuccess={handleGoogleSignIn}
+                   onError={() => setError("Google login failed")}
                   />
-                </button>
               </motion.div>
 
               <p className="mt-4 text-center text-sm sm:text-xs text-gray-600">
