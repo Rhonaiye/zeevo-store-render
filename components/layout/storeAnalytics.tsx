@@ -1,307 +1,302 @@
-'use client';
+"use client";
 
+import { use, useEffect, useState } from "react";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
   Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
   Legend,
-  ArcElement,
-} from 'chart.js';
+} from "recharts";
+import type { PieLabelRenderProps as PieLabelProps } from "recharts";
+import { useAppStore } from "@/store/useAppStore";
 
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
-import { TrendingUp, TrendingDown, Minus, Eye, Users, ShoppingBag } from 'lucide-react';
-
-ChartJS.register(
-  CategoryScale, 
-  LinearScale, 
-  BarElement, 
-  LineElement, 
-  PointElement, 
-  ArcElement, 
-  Title, 
-  Tooltip, 
-  Legend
-);
-
-type AnalyticsProps = {
-  analytics: {
-    totalViews: number;
-    viewsToday: number;
-    viewsThisWeek: number;
-    viewsYesterday?: number;
-    viewsLastWeek?: number;
-    dailyViews?: number[]; // Last 7 days of view data
-    productViews: Record<string, number>;
-  };
+type AnalyticsData = {
+  store: { _id: string; name: string };
+  totals: { sessions: number; uniqueVisitors: number; views: number };
+  last7Days: {
+    date: string;
+    views: number;
+    uniqueVisitors: number;
+    sessions: number;
+    purchases: number;
+    devices: { desktop: number; mobile: number; tablet: number };
+    trafficSources: Record<string, number>;
+    regions: Record<string, number>;
+    products: any[];
+  }[];
+  trafficSources: Record<string, number>;
+  devices: { desktop: number; mobile: number; tablet: number };
+  regions: Record<string, number>;
+  topProducts: { product: string; views: number; purchases: number; revenue: number }[];
 };
 
-export default function StoreAnalytics({ analytics }: AnalyticsProps) {
-  const labels = Object.keys(analytics.productViews);
-  const data = Object.values(analytics.productViews);
+const COLORS = ["#00A86B", "#4CAF50", "#2E7D32", "#66BB6A", "#81C784", "#A5D6A7"];
 
-  // Enhanced data generation for better visual appeal
-  const generateRealisticData = (baseValue: number, variance: number = 0.3) => {
-    return Math.max(1, Math.floor(baseValue * (1 + (Math.random() - 0.5) * variance)));
-  };
+// Custom label renderer for doughnut charts
 
-  // Calculate percentage changes with fallbacks
-  const viewsYesterday = analytics.viewsYesterday || generateRealisticData(analytics.viewsToday, 0.2);
-  const viewsLastWeek = analytics.viewsLastWeek || generateRealisticData(analytics.viewsThisWeek, 0.15);
 
-  const dailyChange = ((analytics.viewsToday - viewsYesterday) / viewsYesterday * 100);
-  const weeklyChange = ((analytics.viewsThisWeek - viewsLastWeek) / viewsLastWeek * 100);
-
-  // Generate more realistic daily views data
-  const generateDailyViews = () => {
-    if (analytics.dailyViews) return analytics.dailyViews;
-    
-    const baseDaily = Math.max(1, Math.floor(analytics.viewsThisWeek / 7));
-    return [
-      generateRealisticData(baseDaily, 0.4),
-      generateRealisticData(baseDaily, 0.3),
-      generateRealisticData(baseDaily, 0.35),
-      generateRealisticData(baseDaily, 0.25),
-      generateRealisticData(baseDaily, 0.3),
-      viewsYesterday,
-      analytics.viewsToday
-    ];
-  };
-
-  const defaultDailyViews = generateDailyViews();
-
-  // Ensure we have enough product data for visual appeal
-  const enhancedProductViews = () => {
-    if (labels.length === 0) {
-      return {
-        labels: ['Product A', 'Product B', 'Product C', 'Product D', 'Product E'],
-        data: [
-          generateRealisticData(analytics.totalViews * 0.3),
-          generateRealisticData(analytics.totalViews * 0.25),
-          generateRealisticData(analytics.totalViews * 0.2),
-          generateRealisticData(analytics.totalViews * 0.15),
-          generateRealisticData(analytics.totalViews * 0.1)
-        ]
-      };
-    }
-    
-    // Pad existing data if too few products
-    const enhancedLabels = [...labels];
-    const enhancedData = [...data];
-    
-    while (enhancedLabels.length < 3) {
-      enhancedLabels.push(`Product ${String.fromCharCode(65 + enhancedLabels.length)}`);
-      enhancedData.push(generateRealisticData(Math.max(...data) * 0.5));
-    }
-    
-    return { labels: enhancedLabels, data: enhancedData };
-  };
-
-  const { labels: productLabels, data: productData } = enhancedProductViews();
-
-  // Additional metrics for fuller dashboard
-  const avgDailyViews = Math.floor(analytics.totalViews / 30);
-  const peakDay = Math.max(...defaultDailyViews);
-  const conversionRate = (2.3 + Math.random() * 1.5).toFixed(1); // Mock conversion rate
-
-  const lineData = {
-    labels: ['6 days ago', '5 days ago', '4 days ago', '3 days ago', '2 days ago', 'Yesterday', 'Today'],
-    datasets: [
-      {
-        label: 'Daily Views',
-        data: defaultDailyViews,
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: '#3b82f6',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
-        pointRadius: 5,
-      },
-    ],
-  };
-
-  const barData = {
-    labels: productLabels,
-    datasets: [
-      {
-        label: 'Product Views',
-        data: productData,
-        backgroundColor: [
-          'rgba(59, 130, 246, 0.8)',
-          'rgba(16, 185, 129, 0.8)',
-          'rgba(245, 158, 11, 0.8)',
-          'rgba(239, 68, 68, 0.8)',
-          'rgba(139, 92, 246, 0.8)',
-          'rgba(236, 72, 153, 0.8)',
-        ],
-        borderRadius: 6,
-        borderWidth: 0,
-      },
-    ],
-  };
-
-  const doughnutData = {
-    labels: productLabels,
-    datasets: [
-      {
-        label: 'View Share',
-        data: productData,
-        backgroundColor: [
-          '#3b82f6',
-          '#10b981',
-          '#f59e0b',
-          '#ef4444',
-          '#8b5cf6',
-          '#ec4899',
-        ],
-        borderWidth: 2,
-        borderColor: '#ffffff',
-      },
-    ],
-  };
-
-  const getTrendIcon = (change: number) => {
-    if (change > 0) return <TrendingUp className="w-4 h-4" />;
-    if (change < 0) return <TrendingDown className="w-4 h-4" />;
-    return <Minus className="w-4 h-4" />;
-  };
-
-  const getTrendColor = (change: number) => {
-    if (change > 0) return 'text-green-600';
-    if (change < 0) return 'text-red-600';
-    return 'text-gray-600';
-  };
+const renderCustomLabel = (props: PieLabelProps) => {
+  const {
+    cx = 0,
+    cy = 0,
+    midAngle = 0,
+    innerRadius = 0,
+    outerRadius = 0,
+    value = 0,
+    name = "",
+  } = props;
+  const RADIAN = Math.PI / 180;
+  const radius = Number(innerRadius) + (Number(outerRadius) - Number(innerRadius)) * 0.5;
+  const x = Number(cx) + radius * Math.cos(-midAngle * RADIAN);
+  const y = Number(cy) + radius * Math.sin(-midAngle * RADIAN);
 
   return (
-    <div className="p-6 space-y-8 bg-gray-50 min-h-screen">
-      {/* Primary Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-gray-600 text-sm font-medium">Total Views</h2>
-              <p className="text-3xl font-bold text-gray-900">{analytics.totalViews.toLocaleString()}</p>
-              <p className="text-xs text-gray-500 mt-1">All time</p>
-            </div>
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <Eye className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
+    <text
+      x={x}
+      y={y}
+      fill="#1f2937"
+      textAnchor={x > Number(cx) ? "start" : "end"}
+      dominantBaseline="central"
+      className="text-[10px] sm:text-[12px]"
+      fontWeight="300"
+    >
+      {`${name}: ${value}`}
+    </text>
+  );
+};
+
+function StatCard({ title, value }: { title: string; value: string | number }) {
+  return (
+    <div className="rounded-2xl shadow bg-[#C4FEC8] p-2 sm:p-3">
+      <h3 className="text-xs sm:text-sm text-gray-500 font-medium">{title}</h3>
+      <p className="text-sm sm:text-base font-bold text-gray-800">{value}</p>
+    </div>
+  );
+}
+
+export default function AnalyticsDashboard() {
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const { userProfile } = useAppStore();
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/analytics/get-analytics/${userProfile?.stores[0]?._id}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch analytics data: ${response.statusText}`);
+        }
+        const result = await response.json();
+        setData(result.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      }
+    };
+
+    fetchAnalytics();
+  }, []);
+
+  if (error) return <p className="text-red-500">Error: {error}</p>;
+  if (!data) return <p>Loading...</p>;
+
+  const trafficData = Object.entries(data.trafficSources).map(([key, value]) => ({ name: key, value }));
+  const deviceData = Object.entries(data.devices).map(([key, value]) => ({ name: key, value }));
+  const regionData = Object.entries(data.regions).map(([key, value]) => ({ name: key, value }));
+  const viewsData = data.last7Days.map((day) => ({
+    date: day.date,
+    views: day.views,
+    uniqueVisitors: day.uniqueVisitors,
+  }));
+
+  return (
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-screen">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{data.store.name} Analytics</h1>
+
+      {/* Totals */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <StatCard title="Views" value={data.totals.views} />
+        <StatCard title="Unique Visitors" value={data.totals.uniqueVisitors} />
+        <StatCard title="Sessions" value={data.totals.sessions} />
+      </div>
+
+      {/* Views Trend */}
+      <div className="rounded-2xl shadow bg-transparent p-2 sm:p-3">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Views (Last 7 Days)</h2>
+        <div className="w-full h-64 sm:h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={viewsData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+              <defs>
+                <linearGradient id="gradientViews" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#00A86B" stopOpacity={0.8} />
+                  <stop offset="100%" stopColor="#4CAF50" stopOpacity={0.8} />
+                </linearGradient>
+              </defs>
+              <XAxis
+                dataKey="date"
+                tickFormatter={(d) => new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short" })}
+                tick={{ fill: "#1f2937", fontSize: 10, fontWeight: "medium" }}
+                className="text-[10px] sm:text-[12px]"
+              />
+              <YAxis
+                tick={{ fill: "#1f2937", fontSize: 10, fontWeight: "medium" }}
+                domain={[0, "auto"]}
+                className="text-[10px] sm:text-[12px]"
+              />
+              <Tooltip
+                formatter={(value, name) => [value, name === "views" ? "Views" : "Unique Visitors"]}
+                labelFormatter={(d) => new Date(d).toDateString()}
+                contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }}
+                cursor={false}
+              />
+              <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
+              <Bar
+                dataKey="views"
+                fill="url(#gradientViews)"
+                radius={[8, 8, 0, 0]}
+                barSize={20}
+                animationDuration={1000}
+                animationEasing="ease-out"
+              />
+              <Bar
+                dataKey="uniqueVisitors"
+                fill="#2E7D32"
+                radius={[8, 8, 0, 0]}
+                barSize={20}
+                animationDuration={1000}
+                animationEasing="ease-out"
+              />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-        
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-gray-600 text-sm font-medium">Views Today</h2>
-              <div className="flex items-center gap-2">
-                <p className="text-3xl font-bold text-gray-900">{analytics.viewsToday.toLocaleString()}</p>
-                <div className={`flex items-center text-sm ${getTrendColor(dailyChange)}`}>
-                  {getTrendIcon(dailyChange)}
-                  <span className="ml-1">{Math.abs(dailyChange).toFixed(1)}%</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">vs yesterday</p>
-            </div>
-            <div className="bg-green-50 p-3 rounded-lg">
-              <Users className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-gray-600 text-sm font-medium">Views This Week</h2>
-              <div className="flex items-center gap-2">
-                <p className="text-3xl font-bold text-gray-900">{analytics.viewsThisWeek.toLocaleString()}</p>
-                <div className={`flex items-center text-sm ${getTrendColor(weeklyChange)}`}>
-                  {getTrendIcon(weeklyChange)}
-                  <span className="ml-1">{Math.abs(weeklyChange).toFixed(1)}%</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">vs last week</p>
-            </div>
-            <div className="bg-purple-50 p-3 rounded-lg">
-              <ShoppingBag className="w-6 h-6 text-purple-600" />
-            </div>
+      </div>
+
+      {/* Traffic, Devices, Regions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6">
+        <div className="rounded-2xl shadow bg-transparent p-2 sm:p-3">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Traffic Sources</h2>
+          <div className="w-full h-56 sm:h-64">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  data={trafficData}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={80}
+                  innerRadius={50}
+                  label={renderCustomLabel}
+                  labelLine={false}
+                  animationDuration={1000}
+                  animationEasing="ease-out"
+                  isAnimationActive={true}
+                >
+                  {trafficData.map((_, idx) => (
+                    <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }} />
+                <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-gray-600 text-sm font-medium">Avg Daily</h2>
-              <p className="text-3xl font-bold text-gray-900">{avgDailyViews.toLocaleString()}</p>
-              <p className="text-xs text-gray-500 mt-1">30-day average</p>
-            </div>
-            <div className="bg-orange-50 p-3 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-orange-600" />
-            </div>
+        <div className="rounded-2xl shadow bg-transparent p-2 sm:p-3">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Devices</h2>
+          <div className="w-full h-56 sm:h-64">
+            {deviceData.every((d) => d.value === 0) ? (
+              <p className="text-gray-500 text-xs sm:text-sm">Not enough data provided</p>
+            ) : (
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={deviceData}
+                    dataKey="value"
+                    nameKey="name"
+                    outerRadius={80}
+                    innerRadius={50}
+                    label={renderCustomLabel}
+                    labelLine={false}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                    isAnimationActive={true}
+                  >
+                    {deviceData.map((_, idx) => (
+                      <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }} />
+                  <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl shadow bg-transparent p-2 sm:p-3">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Regions</h2>
+          <div className="w-full h-56 sm:h-64">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  data={regionData}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={80}
+                  innerRadius={50}
+                  label={renderCustomLabel}
+                  labelLine={false}
+                  animationDuration={1000}
+                  animationEasing="ease-out"
+                  isAnimationActive={true}
+                >
+                  {regionData.map((_, idx) => (
+                    <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }} />
+                <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Charts Section */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Daily Views Trend</h3>
-          <div className="text-sm text-gray-500">
-            Peak: {peakDay.toLocaleString()} views
+      {/* Top Products */}
+      <div className="rounded-2xl shadow bg-transparent p-2 sm:p-3">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Top Products</h2>
+        {data.topProducts.length === 0 ? (
+          <p className="text-gray-500 text-xs sm:text-sm">Not enough data provided</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs sm:text-sm">
+              <thead>
+                <tr className="text-left border-b">
+                  <th className="p-1 sm:p-2 text-gray-800 font-medium">Product</th>
+                  <th className="p-1 sm:p-2 text-gray-800 font-medium">Views</th>
+                  <th className="p-1 sm:p-2 text-gray-800 font-medium">Purchases</th>
+                  <th className="p-1 sm:p-2 text-gray-800 font-medium">Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.topProducts.map((p, i) => (
+                  <tr key={i} className="border-b">
+                    <td className="p-1 sm:p-2 text-gray-800">{p.product}</td>
+                    <td className="p-1 sm:p-2 text-gray-800">{p.views}</td>
+                    <td className="p-1 sm:p-2 text-gray-800">{p.purchases}</td>
+                    <td className="p-1 sm:p-2 text-gray-800">₦{p.revenue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
-        <div className="h-64">
-          <Line 
-            data={lineData} 
-            options={{ 
-              responsive: true, 
-              maintainAspectRatio: false,
-              plugins: { 
-                legend: { display: false },
-                tooltip: {
-                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                  titleColor: 'white',
-                  bodyColor: 'white',
-                  callbacks: {
-                    label: function(context) {
-                      return `Views: ${context.parsed.y.toLocaleString()}`;
-                    }
-                  }
-                }
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  grid: {
-                    color: 'rgba(0, 0, 0, 0.05)',
-                  },
-                  ticks: {
-                    color: '#6b7280',
-                    callback: function(value) {
-                      return value.toLocaleString();
-                    }
-                  }
-                },
-                x: {
-                  grid: {
-                    display: false,
-                  },
-                  ticks: {
-                    color: '#6b7280',
-                  }
-                }
-              }
-            }} 
-          />
-        </div>
+        )}
       </div>
-
- 
     </div>
   );
 }

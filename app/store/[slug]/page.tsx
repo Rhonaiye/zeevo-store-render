@@ -173,7 +173,7 @@ export default function StorePage() {
           body: JSON.stringify({ storeId, device, region, trafficSource }),
         });
 
-        Cookies.set(cookieKey, '1', { expires: 1 });
+        Cookies.set(cookieKey, '1', { expires: 0.0208 }); // expires in 30 minutes
       } catch (err) {
         console.error('Failed to register view:', err);
       }
