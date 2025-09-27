@@ -242,7 +242,7 @@ const Dashboard: React.FC = () => {
             lastReset: new Date().toISOString(),
           }
         );
-        return <StoreAnalytics analytics={combinedAnalytics} />;
+        return <StoreAnalytics/>;
       }
       default:
         return (
