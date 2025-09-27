@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -38,9 +38,16 @@ type AnalyticsData = {
 
 const COLORS = ["#00A86B", "#4CAF50", "#2E7D32", "#66BB6A", "#81C784", "#A5D6A7"];
 
+// Loader Component
+function Loader() {
+  return (
+    <div className="flex justify-center items-center min-h-[200px]">
+      <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-gray-200 border-t-[#00A86B]"></div>
+    </div>
+  );
+}
+
 // Custom label renderer for doughnut charts
-
-
 const renderCustomLabel = (props: PieLabelProps) => {
   const {
     cx = 0,
@@ -83,11 +90,13 @@ function StatCard({ title, value }: { title: string; value: string | number }) {
 export default function AnalyticsDashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { userProfile } = useAppStore();
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/analytics/get-analytics/${userProfile?.stores[0]?._id}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch analytics data: ${response.statusText}`);
@@ -96,83 +105,106 @@ export default function AnalyticsDashboard() {
         setData(result.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchAnalytics();
-  }, []);
+  }, [userProfile?.stores]);
 
-  if (error) return <p className="text-red-500">Error: {error}</p>;
-  if (!data) return <p>Loading...</p>;
+  if (isLoading) {
+    return (
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-screen">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Analytics Dashboard</h1>
+        <Loader />
+      </div>
+    );
+  }
 
-  const trafficData = Object.entries(data.trafficSources).map(([key, value]) => ({ name: key, value }));
-  const deviceData = Object.entries(data.devices).map(([key, value]) => ({ name: key, value }));
-  const regionData = Object.entries(data.regions).map(([key, value]) => ({ name: key, value }));
-  const viewsData = data.last7Days.map((day) => ({
+  if (error) {
+    return (
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-screen">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Analytics Dashboard</h1>
+        <p className="text-red-500">Error: {error}</p>
+      </div>
+    );
+  }
+
+  const trafficData = data ? Object.entries(data.trafficSources).map(([key, value]) => ({ name: key, value })) : [];
+  const deviceData = data ? Object.entries(data.devices).map(([key, value]) => ({ name: key, value })) : [];
+  const regionData = data ? Object.entries(data.regions).map(([key, value]) => ({ name: key, value })) : [];
+  const viewsData = data ? data.last7Days.map((day) => ({
     date: day.date,
     views: day.views,
     uniqueVisitors: day.uniqueVisitors,
-  }));
+  })) : [];
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-screen">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{data.store.name} Analytics</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+        {data ? `${data.store.name} Analytics` : "Analytics Dashboard"}
+      </h1>
 
       {/* Totals */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <StatCard title="Views" value={data.totals.views} />
-        <StatCard title="Unique Visitors" value={data.totals.uniqueVisitors} />
-        <StatCard title="Sessions" value={data.totals.sessions} />
+        <StatCard title="Views" value={data ? data.totals.views : "Not enough data"} />
+        <StatCard title="Unique Visitors" value={data ? data.totals.uniqueVisitors : "Not enough data"} />
+        <StatCard title="Sessions" value={data ? data.totals.sessions : "Not enough data"} />
       </div>
 
       {/* Views Trend */}
       <div className="rounded-2xl shadow bg-transparent p-2 sm:p-3">
         <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Views (Last 7 Days)</h2>
         <div className="w-full h-64 sm:h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={viewsData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
-              <defs>
-                <linearGradient id="gradientViews" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#00A86B" stopOpacity={0.8} />
-                  <stop offset="100%" stopColor="#4CAF50" stopOpacity={0.8} />
-                </linearGradient>
-              </defs>
-              <XAxis
-                dataKey="date"
-                tickFormatter={(d) => new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short" })}
-                tick={{ fill: "#1f2937", fontSize: 10, fontWeight: "medium" }}
-                className="text-[10px] sm:text-[12px]"
-              />
-              <YAxis
-                tick={{ fill: "#1f2937", fontSize: 10, fontWeight: "medium" }}
-                domain={[0, "auto"]}
-                className="text-[10px] sm:text-[12px]"
-              />
-              <Tooltip
-                formatter={(value, name) => [value, name === "views" ? "Views" : "Unique Visitors"]}
-                labelFormatter={(d) => new Date(d).toDateString()}
-                contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }}
-                cursor={false}
-              />
-              <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
-              <Bar
-                dataKey="views"
-                fill="url(#gradientViews)"
-                radius={[8, 8, 0, 0]}
-                barSize={20}
-                animationDuration={1000}
-                animationEasing="ease-out"
-              />
-              <Bar
-                dataKey="uniqueVisitors"
-                fill="#2E7D32"
-                radius={[8, 8, 0, 0]}
-                barSize={20}
-                animationDuration={1000}
-                animationEasing="ease-out"
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          {viewsData.length === 0 ? (
+            <p className="text-gray-500 text-xs sm:text-sm text-center mt-20">Not enough data provided</p>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={viewsData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                <defs>
+                  <linearGradient id="gradientViews" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#00A86B" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="#4CAF50" stopOpacity={0.8} />
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(d) => new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short" })}
+                  tick={{ fill: "#1f2937", fontSize: 10, fontWeight: "medium" }}
+                  className="text-[10px] sm:text-[12px]"
+                />
+                <YAxis
+                  tick={{ fill: "#1f2937", fontSize: 10, fontWeight: "medium" }}
+                  domain={[0, "auto"]}
+                  className="text-[10px] sm:text-[12px]"
+                />
+                <Tooltip
+                  formatter={(value, name) => [value, name === "views" ? "Views" : "Unique Visitors"]}
+                  labelFormatter={(d) => new Date(d).toDateString()}
+                  contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }}
+                  cursor={false}
+                />
+                <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
+                <Bar
+                  dataKey="views"
+                  fill="url(#gradientViews)"
+                  radius={[8, 8, 0, 0]}
+                  barSize={20}
+                  animationDuration={1000}
+                  animationEasing="ease-out"
+                />
+                <Bar
+                  dataKey="uniqueVisitors"
+                  fill="#2E7D32"
+                  radius={[8, 8, 0, 0]}
+                  barSize={20}
+                  animationDuration={1000}
+                  animationEasing="ease-out"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 
@@ -181,36 +213,40 @@ export default function AnalyticsDashboard() {
         <div className="rounded-2xl shadow bg-transparent p-2 sm:p-3">
           <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Traffic Sources</h2>
           <div className="w-full h-56 sm:h-64">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie
-                  data={trafficData}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={80}
-                  innerRadius={50}
-                  label={renderCustomLabel}
-                  labelLine={false}
-                  animationDuration={1000}
-                  animationEasing="ease-out"
-                  isAnimationActive={true}
-                >
-                  {trafficData.map((_, idx) => (
-                    <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }} />
-                <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
-              </PieChart>
-            </ResponsiveContainer>
+            {trafficData.length === 0 || trafficData.every((d) => d.value === 0) ? (
+              <p className="text-gray-500 text-xs sm:text-sm text-center mt-16">Not enough data provided</p>
+            ) : (
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={trafficData}
+                    dataKey="value"
+                    nameKey="name"
+                    outerRadius={80}
+                    innerRadius={50}
+                    label={renderCustomLabel}
+                    labelLine={false}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                    isAnimationActive={true}
+                  >
+                    {trafficData.map((_, idx) => (
+                      <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }} />
+                  <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
         <div className="rounded-2xl shadow bg-transparent p-2 sm:p-3">
           <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Devices</h2>
           <div className="w-full h-56 sm:h-64">
-            {deviceData.every((d) => d.value === 0) ? (
-              <p className="text-gray-500 text-xs sm:text-sm">Not enough data provided</p>
+            {deviceData.length === 0 || deviceData.every((d) => d.value === 0) ? (
+              <p className="text-gray-500 text-xs sm:text-sm text-center mt-16">Not enough data provided</p>
             ) : (
               <ResponsiveContainer>
                 <PieChart>
@@ -241,28 +277,32 @@ export default function AnalyticsDashboard() {
         <div className="rounded-2xl shadow bg-transparent p-2 sm:p-3">
           <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Regions</h2>
           <div className="w-full h-56 sm:h-64">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie
-                  data={regionData}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={80}
-                  innerRadius={50}
-                  label={renderCustomLabel}
-                  labelLine={false}
-                  animationDuration={1000}
-                  animationEasing="ease-out"
-                  isAnimationActive={true}
-                >
-                  {regionData.map((_, idx) => (
-                    <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }} />
-                <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
-              </PieChart>
-            </ResponsiveContainer>
+            {regionData.length === 0 || regionData.every((d) => d.value === 0) ? (
+              <p className="text-gray-500 text-xs sm:text-sm text-center mt-16">Not enough data provided</p>
+            ) : (
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={regionData}
+                    dataKey="value"
+                    nameKey="name"
+                    outerRadius={80}
+                    innerRadius={50}
+                    label={renderCustomLabel}
+                    labelLine={false}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                    isAnimationActive={true}
+                  >
+                    {regionData.map((_, idx) => (
+                      <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }} />
+                  <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>
@@ -270,7 +310,7 @@ export default function AnalyticsDashboard() {
       {/* Top Products */}
       <div className="rounded-2xl shadow bg-transparent p-2 sm:p-3">
         <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Top Products</h2>
-        {data.topProducts.length === 0 ? (
+        {data && data.topProducts.length === 0 ? (
           <p className="text-gray-500 text-xs sm:text-sm">Not enough data provided</p>
         ) : (
           <div className="overflow-x-auto">
@@ -284,7 +324,7 @@ export default function AnalyticsDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {data.topProducts.map((p, i) => (
+                {data?.topProducts.map((p, i) => (
                   <tr key={i} className="border-b">
                     <td className="p-1 sm:p-2 text-gray-800">{p.product}</td>
                     <td className="p-1 sm:p-2 text-gray-800">{p.views}</td>
