@@ -47,34 +47,21 @@ function Loader() {
   );
 }
 
-// Custom label renderer for doughnut charts
-const renderCustomLabel = (props: PieLabelProps) => {
-  const {
-    cx = 0,
-    cy = 0,
-    midAngle = 0,
-    innerRadius = 0,
-    outerRadius = 0,
-    value = 0,
-    name = "",
-  } = props;
-  const RADIAN = Math.PI / 180;
-  const radius = Number(innerRadius) + (Number(outerRadius) - Number(innerRadius)) * 0.5;
-  const x = Number(cx) + radius * Math.cos(-midAngle * RADIAN);
-  const y = Number(cy) + radius * Math.sin(-midAngle * RADIAN);
-
+// Custom legend renderer to show name and value
+const renderLegend = (props: any) => {
+  const { payload } = props;
   return (
-    <text
-      x={x}
-      y={y}
-      fill="#1f2937"
-      textAnchor={x > Number(cx) ? "start" : "end"}
-      dominantBaseline="central"
-      className="text-[10px] sm:text-[12px]"
-      fontWeight="300"
-    >
-      {`${name}: ${value}`}
-    </text>
+    <ul className="flex flex-wrap justify-center gap-2 sm:gap-4">
+      {payload.map((entry: any, index: number) => (
+        <li key={`item-${index}`} className="flex items-center text-[10px] sm:text-[12px] text-gray-800">
+          <span
+            className="inline-block w-3 h-3 mr-1 sm:mr-2 rounded-full"
+            style={{ backgroundColor: entry.color }}
+          ></span>
+          {`${entry.value}: ${entry.payload.value}`}
+        </li>
+      ))}
+    </ul>
   );
 };
 
@@ -89,7 +76,6 @@ function StatCard({ title, value }: { title: string; value: string | number }) {
 
 export default function AnalyticsDashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { userProfile } = useAppStore();
 
@@ -99,12 +85,12 @@ export default function AnalyticsDashboard() {
         setIsLoading(true);
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/analytics/get-analytics/${userProfile?.stores[0]?._id}`);
         if (!response.ok) {
-          throw new Error(`Failed to fetch analytics data: ${response.statusText}`);
+          throw new Error();
         }
         const result = await response.json();
         setData(result.data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An unexpected error occurred");
+        setData(null);
       } finally {
         setIsLoading(false);
       }
@@ -122,11 +108,11 @@ export default function AnalyticsDashboard() {
     );
   }
 
-  if (error) {
+  if (!data) {
     return (
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-screen">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Analytics Dashboard</h1>
-        <p className="text-red-500">Error: {error}</p>
+        <p className="text-gray-500">Not enough data provided</p>
       </div>
     );
   }
@@ -224,8 +210,6 @@ export default function AnalyticsDashboard() {
                     nameKey="name"
                     outerRadius={80}
                     innerRadius={50}
-                    label={renderCustomLabel}
-                    labelLine={false}
                     animationDuration={1000}
                     animationEasing="ease-out"
                     isAnimationActive={true}
@@ -235,7 +219,7 @@ export default function AnalyticsDashboard() {
                     ))}
                   </Pie>
                   <Tooltip contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }} />
-                  <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
+                  <Legend content={renderLegend} />
                 </PieChart>
               </ResponsiveContainer>
             )}
@@ -256,8 +240,6 @@ export default function AnalyticsDashboard() {
                     nameKey="name"
                     outerRadius={80}
                     innerRadius={50}
-                    label={renderCustomLabel}
-                    labelLine={false}
                     animationDuration={1000}
                     animationEasing="ease-out"
                     isAnimationActive={true}
@@ -267,7 +249,7 @@ export default function AnalyticsDashboard() {
                     ))}
                   </Pie>
                   <Tooltip contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }} />
-                  <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
+                  <Legend content={renderLegend} />
                 </PieChart>
               </ResponsiveContainer>
             )}
@@ -288,8 +270,6 @@ export default function AnalyticsDashboard() {
                     nameKey="name"
                     outerRadius={80}
                     innerRadius={50}
-                    label={renderCustomLabel}
-                    labelLine={false}
                     animationDuration={1000}
                     animationEasing="ease-out"
                     isAnimationActive={true}
@@ -299,7 +279,7 @@ export default function AnalyticsDashboard() {
                     ))}
                   </Pie>
                   <Tooltip contentStyle={{ backgroundColor: "#1f2937", color: "#fff", borderRadius: "8px", fontSize: 10 }} />
-                  <Legend wrapperStyle={{ fontSize: "10px", color: "#1f2937", fontWeight: "medium" }} />
+                  <Legend content={renderLegend} />
                 </PieChart>
               </ResponsiveContainer>
             )}

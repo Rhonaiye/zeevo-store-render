@@ -128,12 +128,22 @@ export default function StorePage() {
   // Register view once store loads
   useEffect(() => {
     const registerView = async (storeId: string) => {
-      const cookieKey = `store_${storeId}_viewed`;
-      if (Cookies.get(cookieKey)) return;
+      // Cookie key for tracking if user has visited this specific store
+      const viewCookieKey = `store_${storeId}_viewed`;
+      const uniqueCookieKey = `store_${storeId}_unique`;
+      
+      // Check if this is a unique visitor (first time ever)
+      const isUniqueVisitor = !Cookies.get(uniqueCookieKey);
+      
+      // Check if we should register a view (not viewed in last 30 minutes)
+      const shouldRegisterView = !Cookies.get(viewCookieKey);
+      
+      // Only proceed if we should register a view
+      if (!shouldRegisterView) return;
 
       const getDeviceType = () => {
         const ua = navigator.userAgent.toLowerCase();
-        if (/mobile|android|iphone|ipad|tablet/i.test(ua)) return 'mobile';
+        if (/mobile|android|iphone/i.test(ua)) return 'mobile';
         if (/tablet|ipad/i.test(ua)) return 'tablet';
         return 'desktop';
       };
@@ -157,6 +167,8 @@ export default function StorePage() {
           if (referrer.includes('google.com')) return 'google';
           if (referrer.includes('facebook.com')) return 'facebook';
           if (referrer.includes('twitter.com')) return 'twitter';
+          if (referrer.includes('instagram.com')) return 'instagram';
+          if (referrer.includes('linkedin.com')) return 'linkedin';
           return 'referrer';
         }
         return 'direct';
@@ -167,13 +179,26 @@ export default function StorePage() {
         const region = await getRegion();
         const trafficSource = getTrafficSource();
 
+        // Send analytics with unique visitor flag
         await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/analytics/page-view`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ storeId, device, region, trafficSource }),
+          body: JSON.stringify({ 
+            storeId, 
+            device, 
+            region, 
+            trafficSource,
+            isUniqueVisitor // Send this flag to backend
+          }),
         });
 
-        Cookies.set(cookieKey, '1', { expires: 0.0208 }); // expires in 30 minutes
+        // Set view cookie (expires in 30 minutes)
+        Cookies.set(viewCookieKey, '1', { expires: 0.0208 }); // 30 minutes
+        
+        // Set unique visitor cookie (expires in 365 days) - only if first time
+        if (isUniqueVisitor) {
+          Cookies.set(uniqueCookieKey, '1', { expires: 365 });
+        }
       } catch (err) {
         console.error('Failed to register view:', err);
       }
