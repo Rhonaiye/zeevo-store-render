@@ -110,7 +110,7 @@ const Dashboard: React.FC = () => {
     if (profile) {
       setUserProfile(profile);
     }
-    
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -120,7 +120,7 @@ const Dashboard: React.FC = () => {
       if (profile) {
         setUserProfile(profile);
       }
-     
+      setIsLoading(false);
     };
     initializeProfile();
 
