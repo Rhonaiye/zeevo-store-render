@@ -21,6 +21,7 @@ import { useAppStore, Analytics, Product, UserProfile, NavItem, ActionCard, Quic
 import OrdersManagement from '@/components/layout/ordersManagement';
 import WalletManagement from '@/components/layout/walletManagement';
 import KYCOnboardingModal from '@/components/layout/kycOnboard';
+import { DashboardSkeleton } from '@/components/loaders/skeletonLoader';
 
 // Define the Dashboard component without props
 const Dashboard: React.FC = () => {
@@ -263,16 +264,8 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F3FFF4] flex items-center justify-center">
       {isLoading ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="flex flex-col items-center justify-center"
-          aria-live="polite"
-          aria-busy={isLoading}
-        >
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-          <span className="sr-only">Loading user profile...</span>
+        <motion.div>
+        <DashboardSkeleton/>
         </motion.div>
       ) : !userProfile ? (
         <motion.div

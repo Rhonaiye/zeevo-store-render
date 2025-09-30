@@ -1,3 +1,4 @@
+'use client'
 import React, { useState } from "react";
 import { ChevronRight, ChevronLeft, Shield, Check, Phone, Calendar, X, ArrowRight } from 'lucide-react';
 
@@ -228,18 +229,18 @@ const KYCOnboardingModal: React.FC = () => {
     <div className="flex items-center justify-center">
       <div
         onClick={() => setIsOpen(true)}
-        className="fixed flex items-center justify-between left-0 right-0 rounded-t-2xl bottom-0 w-full z-50 bg-[#16A34A] text-base text-gray-50 px-8  xl:px-16 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
+        className="fixed flex items-center justify-between left-0 right-0 rounded-t-2xl bottom-0 w-full z-50 bg-[#16A34A] text-base text-gray-50 px-8 xl:px-16 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
       >
-       <p>Get verified to start accepting customer payments.</p>
-       <button className="hidden  bg-white text-[#16A34A] cursor-pointer px-3 md:flex items-center rounded-md py-1">
-           Start Verification 
-           <ArrowRight className="h-4 w-4 ml-1" />
+        <p>Get verified to start accepting customer payments.</p>
+        <button className="hidden bg-white text-[#16A34A] cursor-pointer px-3 md:flex items-center rounded-md py-1">
+          Start Verification 
+          <ArrowRight className="h-4 w-4 ml-1" />
         </button>
       </div>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-[85%] max-h-[90vh] overflow-hidden animate-in fade-in duration-300">
+        <div className="fixed left-0 right-0 bottom-0 bg-transparent backdrop-blur-xs flex items-end justify-center z-50 h-[100vh] m-0 p-0">
+          <div className="bg-white rounded-t-2xl shadow-2xl w-full max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom duration-300">
             <div className="relative bg-[#22C55E] text-gray-800 p-6">
               <button
                 onClick={handleClose}
@@ -267,7 +268,7 @@ const KYCOnboardingModal: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
+            <div className="p-6 overflow-y-auto max-h-[80vh] ">
               <div className="mb-6">
                 <div className="flex items-center space-x-3 mb-3">
                   {React.createElement(steps[currentStep].icon, {
@@ -280,7 +281,7 @@ const KYCOnboardingModal: React.FC = () => {
                 <p className="text-gray-600 text-sm">{steps[currentStep].description}</p>
               </div>
 
-              <div className="min-h-[20rem]">
+              <div className="min-h-[80vh]">
                 {renderStepContent()}
               </div>
             </div>
