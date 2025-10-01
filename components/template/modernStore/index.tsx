@@ -405,7 +405,7 @@ const ModernStoreTemplate: React.FC<ModernStoreTemplateProps> = ({ store, isPrev
                         >
                           {formatPrice(product.price)}
                         </span>
-                        {product.discountPrice && (
+                        {typeof product.discountPrice === 'number' && product.discountPrice > 0 && (
                           <span 
                             className="text-sm line-through" 
                             style={{ color: lightenColor(secondaryColor, 0.5) }}

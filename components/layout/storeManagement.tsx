@@ -446,7 +446,7 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="w-full max-w-3xl mx-auto px-4 sm:px-6"
+          className="w-full"
         >
           <StoreForm
             isEdit={showEditForm}

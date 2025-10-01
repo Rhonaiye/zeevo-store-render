@@ -9,6 +9,7 @@ import Footer from './footer';
 import CartDrawer from './cartDrawer';
 import { ShoppingBag, Heart, Search, Tag } from 'lucide-react';
 import { Store } from '@/store/useAppStore';
+import { useCartStore } from '@/store/useCartStore';
 
 interface CartItem {
   _id: string;
@@ -28,6 +29,8 @@ const SleekStoreTemplate: React.FC<SleekStoreTemplateProps> = ({ store, isPrevie
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTag, setSelectedTag] = useState<string>('');
+  const { addItem: addToCart } = useCartStore();
+
 
   const {
     name,
@@ -106,27 +109,7 @@ const SleekStoreTemplate: React.FC<SleekStoreTemplateProps> = ({ store, isPrevie
     }
   };
 
-  const addToCart = (product: Product): void => {
-    if (!product._id || !product.name || typeof product.price !== 'number' || !product.isAvailable) return;
-    setCartItems((prev) => {
-      const existing = prev.find((item) => item._id === product._id);
-      if (existing) {
-        const newQuantity = existing.quantity + 1;
-        if (product.stockCount && newQuantity > product.stockCount) return prev;
-        return prev.map((item) =>
-          item._id === product._id ? { ...item, quantity: newQuantity } : item
-        );
-      }
-      return [...prev, {
-        _id: product._id,
-        name: product.name,
-        price: product.price,
-        image: (product.images && product.images.length > 0) ? product.images[0] : '/fallback-image.jpg',
-        quantity: 1,
-      }];
-    });
-  };
-
+  
   const updateQuantity = (id: string, quantity: number): void => {
     const product = products.find((p) => p._id === id);
     if (product && product.stockCount && quantity > product.stockCount) return;
@@ -296,7 +279,18 @@ const SleekStoreTemplate: React.FC<SleekStoreTemplateProps> = ({ store, isPrevie
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      addToCart(product);
+                        addToCart({
+                          id: product._id,
+                          title: product.name,
+                          price:
+                            typeof product.discountPrice === 'number' &&
+                            product.discountPrice !== undefined &&
+                            product.discountPrice > 0
+                              ? product.discountPrice
+                              : (typeof product.price === 'number' && product.price !== undefined ? product.price : 0),
+                          quantity: 1,
+                          storeId: store.slug ?? store.name.toLowerCase().replace(/\s+/g, '-'),
+                        });
                     }}
                     disabled={!product.isAvailable}
                     className="absolute hidden md:inline-block inset-x-2 bottom-2 py-1.5 text-white text-sm rounded-md hover:bg-[#c56a05] disabled:opacity-50 transition-opacity opacity-0 group-hover:opacity-100"
@@ -328,18 +322,20 @@ const SleekStoreTemplate: React.FC<SleekStoreTemplateProps> = ({ store, isPrevie
                     </div>
                   )}
                   
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center justify-between">
-                      <span className={`font-bold text-sm ${product.discountPrice ? `line-through text-[0.69em] font-extralight text-gray-400` : ''}`}>
-                        {formatPrice(product.price)}
-                      </span>
-                    </div>
-                    {product.discountPrice && (
-                      <span className={`text-sm font-bold my-0`} style={{ color: store.secondaryColor }}>
+                  {product.discountPrice ? (
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-light text-sm line-through text-gray-400"  >
+                          {formatPrice(product.price)}
+                        </span>
+                      </div>
+                      <span className="text-sm font-bold my-0" style={{ color: store.secondaryColor }}>
                         {formatPrice(product.discountPrice)}
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <strong className="font-bold text-base" style={{ color: store.secondaryColor }}>{formatPrice(product.price)}</strong>
+                  )}
                 </div>
               </Link>
             ))}

@@ -15,7 +15,6 @@ interface StoreFormProps {
 }
 
 const currencies = [
-
   { value: 'NGN', label: 'NGN - Naira' },
 ];
 
@@ -50,7 +49,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="w-full max-w-4xl mx-auto bg-white/90 backdrop-blur-lg rounded-2xl border border-gray-200 shadow-xl overflow-hidden mb-6 sm:mb-8"
+      className="w-full bg-[#F3FFF4] backdrop-blur-lg rounded-2xl border border-gray-200 shadow-xl overflow-hidden mb-6 sm:mb-8"
     >
       {/* Close Button */}
       <div className="absolute top-3 right-3 z-20">
@@ -71,8 +70,8 @@ const StoreForm: React.FC<StoreFormProps> = ({
       </div>
 
       {/* Progress Steps */}
-      <div className="px-4 py-2 sm:px-6 sm:py-3 bg-white/50 border-b border-gray-200">
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-0 sm:flex-nowrap sm:items-center sm:justify-between max-w-md mx-auto">
+      <div className="px-4 py-2 sm:px-6 sm:py-3 bg-[#F3FFF4] border-b border-gray-200">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-0 sm:flex-nowrap sm:items-center sm:justify-center max-w-md mx-auto">
           {sections.map((section, index) => (
             <div key={section.id} className="flex items-center">
               <motion.button
@@ -82,8 +81,8 @@ const StoreForm: React.FC<StoreFormProps> = ({
                 onClick={() => setActiveSection(section.id)}
                 className={`flex flex-col items-center p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
                   activeSection === section.id
-                    ? 'bg-blue-100/50 text-blue-800'
-                    : 'text-gray-600 hover:text-blue-800'
+                    ? 'bg-[#C4FEC8] text-[#16A34A]'
+                    : 'text-gray-600 hover:text-[#16A34A]'
                 }`}
               >
                 <section.icon className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5 sm:mb-1" />
@@ -122,7 +121,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50 focus:bg-white"
+                      className="w-full px-2 sm:px-3 py-1.5 sm:py-2 sm:text-base border-2 border-gray-200 rounded-lg focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50 focus:bg-white"
                       placeholder="My Amazing Store"
                     />
                   </div>
@@ -138,7 +137,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                         required
                         value={formData.slug}
                         onChange={(e) => setFormData({ ...formData, slug: (e.target.value || '').toLowerCase() })}
-                        className="w-full py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50 focus:bg-white pl-14 sm:pl-18 pr-16 sm:pr-24"
+                        className="w-full py-1.5 sm:py-2 sm:text-base border-2 border-gray-200 rounded-lg focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50 focus:bg-white pl-14 sm:pl-18 pr-16 sm:pr-24"
                         placeholder="my-store"
                       />
                       <span className="absolute right-2 sm:right-3 top-1/2  transform -translate-y-1/2 text-gray-400 text-sm sm:text-base font-medium pointer-events-none">
@@ -156,7 +155,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                       value={formData.description || ''}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       rows={3}
-                      className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-gray-400 resize-none text-gray-800 bg-white/50 focus:bg-white"
+                      className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/20 transition-all duration-200 placeholder-gray-400 resize-none text-gray-800 bg-white/50 focus:bg-white"
                       placeholder="Tell customers about your store..."
                     />
                   </div>
@@ -184,11 +183,11 @@ const StoreForm: React.FC<StoreFormProps> = ({
                       <div className="flex items-center gap-2 sm:gap-3">
                         <div
                           className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border-4 border-white shadow-lg cursor-pointer relative overflow-hidden"
-                          style={{ backgroundColor: formData.primaryColor || '#ffffff' }}
+                          style={{ backgroundColor: formData.primaryColor || '#16A34A' }}
                         >
                           <input
                             type="color"
-                            value={formData.primaryColor || '#ffffff'}
+                            value={formData.primaryColor || '#16A34A'}
                             onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           />
@@ -199,7 +198,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                             value={formData.primaryColor || ''}
                             onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
                             className="w-full bg-transparent border-none focus:ring-0 text-sm sm:text-base font-mono text-gray-800 p-0"
-                            placeholder="#ffffff"
+                            placeholder="#16A34A"
                           />
                           <p className="text-xs sm:text-sm text-gray-500 mt-1">Main brand color</p>
                         </div>
@@ -213,11 +212,11 @@ const StoreForm: React.FC<StoreFormProps> = ({
                       <div className="flex items-center gap-2 sm:gap-3">
                         <div
                           className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border-4 border-white shadow-lg cursor-pointer relative overflow-hidden"
-                          style={{ backgroundColor: formData.secondaryColor || '#ffffff' }}
+                          style={{ backgroundColor: formData.secondaryColor || '#C4FEC8' }}
                         >
                           <input
                             type="color"
-                            value={formData.secondaryColor || '#ffffff'}
+                            value={formData.secondaryColor || '#C4FEC8'}
                             onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           />
@@ -228,7 +227,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                             value={formData.secondaryColor || ''}
                             onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
                             className="w-full bg-transparent border-none focus:ring-0 text-sm sm:text-base font-mono text-gray-800 p-0"
-                            placeholder="#ffffff"
+                            placeholder="#C4FEC8"
                           />
                           <p className="text-xs sm:text-sm text-gray-500 mt-1">Accent color</p>
                         </div>
@@ -275,13 +274,13 @@ const StoreForm: React.FC<StoreFormProps> = ({
                               <motion.button
                                 key={currency.value}
                                 type="button"
-                                whileHover={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
+                                whileHover={{ backgroundColor: 'rgba(22, 163, 74, 0.1)' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setFormData({ ...formData, currency: currency.value });
                                   setShowCurrencyDropdown(false);
                                 }}
-                                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-left hover:bg-blue-500/10 transition-colors duration-150 text-gray-800 font-medium border-b border-gray-200 last:border-b-0"
+                                className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-left hover:bg-[#16A34A]/10 transition-colors duration-150 text-gray-800 font-medium border-b border-gray-200 last:border-b-0"
                               >
                                 {currency.label}
                               </motion.button>
@@ -403,7 +402,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                                   shipping: { ...formData.shipping, locations: newLocations },
                                 });
                               }}
-                              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50"
+                              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50"
                               placeholder="Shipping Area (e.g., Lagos Mainland)"
                             />
                             <input
@@ -418,7 +417,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                                   shipping: { ...formData.shipping, locations: newLocations },
                                 });
                               }}
-                              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50"
+                              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50"
                               placeholder="Shipping Fee"
                             />
                             <textarea
@@ -431,7 +430,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                                   shipping: { ...formData.shipping, locations: newLocations },
                                 });
                               }}
-                              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50"
+                              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50"
                               placeholder="Shipping Note (e.g., Delivers in 2 days)"
                             />
                           </div>
@@ -451,7 +450,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                             },
                           });
                         }}
-                        className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-blue-500 hover:text-blue-600"
+                        className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-[#16A34A] hover:text-[#15803D]"
                       >
                         Add Shipping Location
                       </motion.button>
@@ -470,7 +469,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                             pickup: { ...formData.pickup, enabled: e.target.checked },
                           })
                         }
-                        className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 bg-white/50 border-gray-200 rounded focus:ring-blue-500"
+                        className="w-4 h-4 sm:w-5 sm:h-5 text-[#16A34A] bg-white/50 border-gray-200 rounded focus:ring-[#16A34A]"
                       />
                       <label className="text-sm sm:text-base text-gray-800">Enable Pickup</label>
                     </div>
@@ -484,7 +483,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                               pickup: { enabled: formData.pickup?.enabled ?? false, note: e.target.value },
                             })
                           }
-                          className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50"
+                          className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50"
                           placeholder="Pickup Instructions (e.g., Pickup at store address)"
                         />
                       </div>
@@ -519,7 +518,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                         })
                       }
                       rows={4}
-                      className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50"
+                      className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50"
                       placeholder="Enter your return policy..."
                     />
                   </div>
@@ -535,7 +534,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                         })
                       }
                       rows={4}
-                      className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50"
+                      className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/20 transition-all duration-200 placeholder-gray-400 text-gray-800 bg-white/50"
                       placeholder="Enter your terms and conditions..."
                     />
                   </div>
@@ -564,7 +563,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setActiveSection(activeSection + 1)}
-                  className="px-4 sm:px-5 py-2 sm:py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium text-sm sm:text-base transition-all duration-200"
+                  className="px-4 sm:px-5 py-2 sm:py-2.5 bg-[#16A34A] text-white rounded-lg hover:bg-[#15803D] font-medium text-sm sm:text-base transition-all duration-200"
                 >
                   Next
                 </motion.button>
@@ -588,7 +587,7 @@ const StoreForm: React.FC<StoreFormProps> = ({
               <motion.button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-blue-500 text-white px-5 sm:px-6 py-2 sm:py-2.5 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium text-sm sm:text-base transition-all duration-200 shadow-lg"
+                className="bg-[#16A34A] text-white px-5 sm:px-6 py-2 sm:py-2.5 rounded-lg hover:bg-[#15803D] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium text-sm sm:text-base transition-all duration-200 shadow-lg"
               >
                 {isSubmitting ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : <Save className="w-4 h-4 sm:w-5 sm:h-5" />}
                 {isEdit ? 'Update Store' : 'Create Store'}

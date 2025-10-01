@@ -316,7 +316,7 @@ const ProductDetails: React.FC = () => {
         )
       }
 
-      <nav className="max-w-7xl mx-auto px-4 py-4 border-b border-gray-200">
+      <nav className="max-w-7xl mx-auto px-4 py-4 lg:pt-2.5 border-b border-gray-200">
         <div className="flex items-center space-x-2 text-sm">
           <Link 
             href="/" 
@@ -330,7 +330,7 @@ const ProductDetails: React.FC = () => {
         </div>
       </nav>
 
-      <section className="max-w-7xl mx-auto px-4 max-sm:pt-5 py-16">
+      <section className="max-w-7xl mx-auto px-4 max-sm:pt-5 pb-16 pt-10 lg:pt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           <div className="space-y-4">
             <div className="relative aspect-square rounded-2xl overflow-hidden shadow-lg group">

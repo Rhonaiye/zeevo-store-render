@@ -194,7 +194,7 @@ function Footer({store}: {store: Store}) {
                   href="https://www.zeevo.shop/" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-indigo-500 font-medium hover:text-white/80 transition-colors"
+                  className="text-[#16A34A] font-medium hover:text-white/80 transition-colors"
                 >
                   Zeevo
                 </a>

@@ -238,7 +238,7 @@ const Footer: React.FC<FooterProps> = ({
                 className="group flex items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 text-sm"
               >
                 <span>Powered by</span>
-                <span className="font-semibold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent group-hover:from-blue-300 group-hover:to-purple-300 transition-all duration-300">
+                <span className="font-semibold text-[#16A34A]  group-hover:from-blue-300 group-hover:to-purple-300 transition-all duration-300">
                  Zeevo
                 </span>
                 <div className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors duration-300 group-hover:translate-x-0.5">
