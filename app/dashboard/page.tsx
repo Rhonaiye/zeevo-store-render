@@ -349,7 +349,7 @@ const Dashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <div className="text-left sm:text-right">
+                <div className="text-left sm:text-right ml-auto">
                   <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
