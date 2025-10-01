@@ -318,7 +318,7 @@ const Dashboard: React.FC = () => {
              <KYCOnboardingModal/>
             
             <header className="bg-[#C4FEC8]/20 border-b mb-4 rounded-xl w-full z-10">
-              <div className="px-4 py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+              <div className="px-4 py-3 flex flex-row sm:flex-row sm:justify-between sm:items-center gap-3">
                 <div className="flex items-center gap-2">
                   <motion.button
                     whileHover={{ scale: 1.1 }}
