@@ -229,7 +229,7 @@ const KYCOnboardingModal: React.FC = () => {
     <div className="flex items-center justify-center">
       <div
         onClick={() => setIsOpen(true)}
-        className="fixed flex items-center justify-between left-0 right-0 rounded-t-2xl bottom-0 w-full z-50 bg-[#16A34A] text-base text-gray-50 px-8 xl:px-16 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
+        className="fixed hidden md:flex items-center justify-between left-0 right-0 rounded-t-2xl bottom-0 w-full z-50 bg-[#16A34A] text-base text-gray-50 px-8 xl:px-16 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
       >
         <p>Get verified to start accepting customer payments.</p>
         <button className="hidden bg-white text-[#16A34A] cursor-pointer px-3 md:flex items-center rounded-md py-1">
