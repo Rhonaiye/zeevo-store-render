@@ -9,8 +9,13 @@ import {
   Play, 
   Crown,
   ArrowUpRight,
+  Wallet,
+  ShoppingCart,
+  CheckCircle,
+  ArrowRight,
+  Banknote
 } from 'lucide-react';
-import { FC, useState, useEffect } from 'react';
+import React, { FC, useState, useEffect, useMemo } from 'react';
 import { QuickStat, UserProfile, ActionCard } from '@/store/useAppStore';
 import Cookies from 'js-cookie';
 import { useAppStore } from '@/store/useAppStore';
@@ -70,6 +75,159 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
   const isFreePlan = userProfile?.subscription?.plan?.toLowerCase() === 'free';
   const hasStores = stores.length > 0;
   const firstStore = hasStores ? stores[0] : null;
+  const hasPayout = !!(userProfile?.wallet?.payoutAccounts && userProfile.wallet.payoutAccounts.length > 0);
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const handleNavClick = (
+    itemId: string,
+  ) => {
+    setActiveSection(itemId);
+    Cookies.set('lastActiveSection', itemId, { expires: 30 });
+    window.scrollTo(0, 0); // Scroll to top
+  };
+
+  // Update currentStep based on profile
+  useEffect(() => {
+    if (userProfile) {
+      console.log('User Profile:', userProfile);
+      const hasStore = hasStores;
+      if (!hasStore) {
+        setCurrentStep(1);
+      } else if (!hasPayout) {
+        setCurrentStep(2);
+      } else {
+        setCurrentStep(3);
+      }
+    }
+  }, [userProfile, hasStores, hasPayout]);
+
+  const onboardingSteps = useMemo(() => [
+    {
+      step: 1,
+      title: 'Create Your Shop',
+      description: 'Set up your first store to start selling products online.',
+      icon: Store,
+      action: () => {
+        handleNavClick('store');
+      },
+      completed: hasStores,
+    },
+    {
+      step: 2,
+      title: 'Add Payout Account',
+      description: 'Connect your bank or payout method to receive earnings from sales.',
+      icon: Wallet,
+      action: () => {
+        handleNavClick('zeevo_wallet');
+      },
+      completed: hasPayout,
+    },
+    {
+      step: 3,
+      title: 'Start Selling',
+      description: 'Once your store is ready! Add products and watch sales come in.',
+      icon: ShoppingCart,
+      action: () => {
+        addNotification('Welcome to selling! Your setup is complete.', 'success');
+        handleNavClick('products');
+      },
+      completed: true,
+    },
+  ], [setActiveSection, userProfile, stores, addNotification, hasStores, hasPayout]);
+
+  const renderOnboarding = () => {
+    const progress = ((currentStep - 1) / (onboardingSteps.length - 1)) * 100;
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="flex justify-between text-sm text-gray-500 mb-2">
+            <span>Step {currentStep} of {onboardingSteps.length}</span>
+            <span>{progress}% Complete</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <motion.div
+              className="bg-[#41DD60] h-2 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
+        </div>
+
+        {/* Steps List */}
+        <div className="space-y-6">
+          {onboardingSteps.map((stepItem, index) => (
+            <motion.div
+              key={stepItem.step}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={`flex items-start gap-4 p-4 rounded-xl border ${
+                stepItem.completed
+                  ? 'bg-green-50 border-green-200'
+                  : index + 1 < currentStep
+                  ? 'bg-gray-50 border-gray-200'
+                  : 'bg-white border-gray-200'
+              }`}
+            >
+              <div className="flex-shrink-0">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  stepItem.completed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {stepItem.completed ? (
+                    <CheckCircle className="w-5 h-5" />
+                  ) : (
+                    <stepItem.icon className="w-4 h-4" />
+                  )}
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900">{stepItem.title}</h3>
+                <p className="text-sm text-gray-600 mt-1">{stepItem.description}</p>
+                {!stepItem.completed && index + 1 === currentStep && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    onClick={stepItem.action}
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-[#41DD60] text-white rounded-lg text-sm font-medium hover:bg-[#41DD60]/90 transition-colors"
+                  >
+                    {index + 1 === onboardingSteps.length ? 'Get Started' : 'Complete Step'}
+                    <ArrowRight className="w-4 h-4" />
+                  </motion.button>
+                )}
+                {stepItem.completed && index + 1 < onboardingSteps.length && (
+                  <div className="mt-2 flex items-center gap-1 text-sm text-green-600">
+                    <CheckCircle className="w-4 h-4" />
+                    Completed
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Call to Action */}
+        {hasStores && hasPayout && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mt-8 p-6 bg-blue-50 rounded-xl"
+          >
+            <Banknote className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Ready to Sell!</h2>
+            <p className="text-gray-600 mb-4">Your store is set up and payout is configured. Start adding products now.</p>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              onClick={onboardingSteps[2].action}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              Add First Product
+            </motion.button>
+          </motion.div>
+        )}
+      </div>
+    );
+  };
 
   // Load saved section on mount
   useEffect(() => {
@@ -254,7 +412,7 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => openStoreInNewTab(firstStore)}
-              className="bg-gradient-to-r from-[#06A841] to-[#04D32D] text-white px-3 py-1.5 rounded-md font-medium text-xs hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1 transition-colors duration-150 flex items-center space-x-1 w-full sm:w-auto justify-center"
+              className="bg-gradient-to-r from-[#06A841] to-[#04D32D] text-white px-3 py-1.5 rounded-md font-medium text-xs hover:from-[#05A338] hover:to-[#03C92A] focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-1 transition-all duration-150 flex items-center space-x-1 w-full sm:w-auto justify-center"
               aria-label="View live store in a new tab"
             >
               <ArrowUpRight className="w-3 h-3" />
@@ -348,8 +506,6 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
     switch (card.id) {
       case 'manage':
         return 'Manage Store';
-      case 'preview':
-        return 'Preview Store';
       default:
         return card.buttonText;
     }
@@ -360,7 +516,7 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
       case 'manage':
         return 'Navigate to store management section';
       case 'preview':
-        return 'Preview store in a new tab';
+        return 'View live store in a new tab';
       default:
         return card.buttonText;
     }
@@ -407,9 +563,33 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
     <div className="space-y-6 relative">
       <AnimatePresence mode="wait">
         {isLoading ? (
-          <LoadingState />
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <LoadingState />
+          </motion.div>
+        ) : !hasStores || !hasPayout ? (
+          <motion.div
+            key="onboarding"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {renderOnboarding()}
+          </motion.div>
         ) : (
-          <motion.div initial="initial" animate="animate" exit="exit" className="space-y-6">
+          <motion.div
+            key="dashboard-content"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
             <QuickStatsGrid />
             <StoreStatus />
             <ActionCardsSection />

@@ -52,14 +52,18 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [setActiveSection, navItems]);
 
-  const handleNavClick = useCallback((itemId: string) => {
+  const handleNavClick = (
+    itemId: string,
+    setActiveSection: (section: string) => void,
+    toggleSidebar: () => void
+  ) => {
     setActiveSection(itemId);
     setCookie('lastActiveSection', itemId, 30); // Save for 30 days
     window.scrollTo(0, 0); // Scroll to top
     if (window.innerWidth < 1024) {
       toggleSidebar();
     }
-  }, [setActiveSection, toggleSidebar]);
+  };
 
   return (
     <AnimatePresence>
@@ -110,7 +114,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       <motion.button
                         whileHover={{ scale: 1.01 }}
                         whileTap={{ scale: 0.99 }}
-                        onClick={() => handleNavClick(item.id)}
+                        onClick={() => handleNavClick(item.id, setActiveSection, toggleSidebar)}
                         className={`w-full flex items-center gap-3 px-3 py-3 sm:py-2.5 text-base sm:text-sm font-medium rounded-lg transition-all ${
                           activeSection === item.id
                             ? 'bg-gradient-to-b from-[#069F44] to-[#04DB2A] text-white shadow-sm'

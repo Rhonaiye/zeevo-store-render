@@ -22,6 +22,7 @@ import OrdersManagement from '@/components/layout/ordersManagement';
 import WalletManagement from '@/components/layout/walletManagement';
 import KYCOnboardingModal from '@/components/layout/kycOnboard';
 import { DashboardSkeleton } from '@/components/loaders/skeletonLoader';
+import PayoutsView from '@/components/layout/payoutsView';
 
 // Define the Dashboard component without props
 const Dashboard: React.FC = () => {
@@ -136,7 +137,7 @@ const Dashboard: React.FC = () => {
     { id: 'store', name: 'My Store', icon: Store },
     { id: 'products', name: 'Products', icon: Package },
     { id: 'orders', name: 'Orders', icon: ShoppingCart },
-   
+    { id: 'payouts', name: 'Payouts', icon: Wallet },
     { id: 'analytics', name: 'Analytics', icon: BarChart3 },
     { id: 'settings', name: 'Settings', icon: Settings },
   ];
@@ -209,9 +210,9 @@ const Dashboard: React.FC = () => {
         return (
           <OrdersManagement/>
         );
-      case 'zeevo_wallet':
+      case 'payouts':
         return (
-          <WalletManagement/>
+          <PayoutsView/>
         )
       case 'store':
         return (
@@ -222,6 +223,7 @@ const Dashboard: React.FC = () => {
         );
       case 'settings':
         return <RenderSettings isLoading={isLoading} addNotification={addNotification}/>;
+
       case 'analytics': {
         const combinedAnalytics = (userProfile?.stores || []).reduce<Analytics>(
           (acc, store) => {
@@ -315,7 +317,7 @@ const Dashboard: React.FC = () => {
           />
            
           <main className="flex-1 p-3 pb-14 max-w-6xl mx-auto lg:ml-64 relative">
-             <KYCOnboardingModal/>
+        
             
             <header className="bg-[#C4FEC8]/20 border-b mb-4 rounded-xl w-full z-10">
               <div className="px-4 py-3 flex flex-row sm:flex-row sm:justify-between sm:items-center gap-3">
