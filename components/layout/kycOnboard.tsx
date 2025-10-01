@@ -239,7 +239,7 @@ const KYCOnboardingModal: React.FC = () => {
       </div>
 
       {isOpen && (
-        <div className="fixed left-0 right-0 bottom-0 bg-transparent backdrop-blur-xs flex items-end justify-center z-50 h-[100vh] m-0 p-0">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end justify-center z-50">
           <div className="bg-white rounded-t-2xl shadow-2xl w-full max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom duration-300">
             <div className="relative bg-[#22C55E] text-gray-800 p-6">
               <button

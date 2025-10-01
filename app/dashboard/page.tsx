@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import {
   Home, Store, Settings, Plus, Edit3, Eye, BarChart3, Loader2, Package, Menu,
   CheckCircle, Clock, ShoppingCart,
-  Wallet, User
+  Wallet, User, LogOut
 } from 'lucide-react';
 import Image from 'next/image';
 import RenderDashboard from '@/components/layout/dashboard';
@@ -349,8 +349,16 @@ const Dashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <div className="text-left sm:text-right text-xs sm:text-sm">
-                 notif
+                <div className="text-left sm:text-right">
+                  <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs sm:text-sm hover:bg-red-600 transition-colors flex items-center gap-2"
+                  >
+                  <LogOut className="w-4 h-4 mr-1" />
+                  Logout
+                  </motion.button>
                 </div>
               </div>
             </header>
