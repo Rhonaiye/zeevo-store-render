@@ -23,6 +23,7 @@ import WalletManagement from '@/components/layout/walletManagement';
 import KYCOnboardingModal from '@/components/layout/kycOnboard';
 import { DashboardSkeleton } from '@/components/loaders/skeletonLoader';
 import PayoutsView from '@/components/layout/payoutsView';
+import NotificationButton from '@/components/ui/notificatonButton';
 
 // Define the Dashboard component without props
 const Dashboard: React.FC = () => {
@@ -352,15 +353,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-left sm:text-right ml-auto">
-                  <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleLogout}
-                  className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs sm:text-sm hover:bg-red-600 transition-colors flex items-center gap-2"
-                  >
-                  <LogOut className="w-4 h-4 mr-1" />
-                  Logout
-                  </motion.button>
+                 <NotificationButton/>
                 </div>
               </div>
             </header>
