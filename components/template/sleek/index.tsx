@@ -151,7 +151,7 @@ const SleekStoreTemplate: React.FC<SleekStoreTemplateProps> = ({ store, isPrevie
         setIsCartOpen={setIsCartOpen}
       />
       <HeroSection name={name} description={description} secondaryColor={secondaryColor}/>
-      <section id="products" className="max-w-6xl mx-auto px-4 pt-16 pb-32">
+      <section id="products" className="max-w-6xl mx-auto max-sm:px-1.5 px-4 pt-16 pb-32">
         <div className="mb-6 text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
             {searchQuery || selectedTag 
@@ -249,16 +249,13 @@ const SleekStoreTemplate: React.FC<SleekStoreTemplateProps> = ({ store, isPrevie
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-4 md:gap-6">
             {filteredProducts.map((product) => (
               <Link
                 key={product._id}
                 href={`/${product._id}`}
                 className="group bg-transparent border-0 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
-                style={{ 
-                  boxShadow: `0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)`,
-                  filter: 'brightness(0.95)'
-                }}
+                
               >
                 <div className="relative aspect-square">
                   {product.images && product.images.length > 0 && (
