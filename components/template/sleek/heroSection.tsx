@@ -25,23 +25,19 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
   return (
     <section
-      className="relative py-32"
+      className="relative min-h-[70vh] md:min-h-[85vh] flex items-center justify-center py-20 md:py-32"
       style={{
         backgroundColor: secondaryColor,
-        backgroundImage: heroImage
-          ? `url(${heroImage})`
-          : undefined,
+        backgroundImage: heroImage ? `url(${heroImage})` : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}
     >
-      {/* Overlay to darken image for readability */}
-      {heroImage && (
-        <div className="absolute inset-0 bg-black/40"></div>
-      )}
+      {/* Dark overlay for contrast */}
+      {heroImage && <div className="absolute inset-0 bg-black/50" />}
 
-      {/* Subtle pattern */}
+      {/* Subtle pattern layer */}
       <div className="absolute inset-0 opacity-10 pointer-events-none">
         <div
           className="absolute inset-0"
@@ -53,15 +49,19 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 text-center z-10">
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{name}</h1>
+        <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight">
+          {name}
+        </h1>
         {description && (
-          <p className="text-lg text-gray-100 mb-6 max-w-2xl mx-auto">{description}</p>
+          <p className="text-lg md:text-xl text-gray-100 mb-8 max-w-2xl mx-auto">
+            {description}
+          </p>
         )}
 
-        {/* View Products Button */}
+        {/* Call to action */}
         <button
           onClick={handleViewProducts}
-          className="bg-white text-gray-900 px-8 py-3 rounded-full font-semibold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          className="bg-white text-gray-900 px-10 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
         >
           View Products
         </button>
