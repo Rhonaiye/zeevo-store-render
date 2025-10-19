@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://zeevo.shop/auth/sign-up</loc><lastmod>2025-09-15T19:45:39.745Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop/contact</loc><lastmod>2025-09-15T19:45:39.747Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop/admin</loc><lastmod>2025-09-15T19:45:39.747Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop/features</loc><lastmod>2025-09-15T19:45:39.747Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop/dashboard/pricing</loc><lastmod>2025-09-15T19:45:39.747Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop/dashboard</loc><lastmod>2025-09-15T19:45:39.747Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop</loc><lastmod>2025-09-15T19:45:39.747Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop/privacy</loc><lastmod>2025-09-15T19:45:39.747Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop/pricing</loc><lastmod>2025-09-15T19:45:39.747Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop/user-verify</loc><lastmod>2025-09-15T19:45:39.747Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop/auth/login</loc><lastmod>2025-09-15T19:45:39.747Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop/terms</loc><lastmod>2025-09-15T19:45:39.748Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop/verify-payout-account</loc><lastmod>2025-09-15T19:45:39.748Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://zeevo.shop/test</loc><lastmod>2025-09-15T19:45:39.748Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/auth/login</loc><lastmod>2025-10-19T04:05:26.638Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/auth/sign-up</loc><lastmod>2025-10-19T04:05:26.640Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/contact</loc><lastmod>2025-10-19T04:05:26.640Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/dashboard/pricing</loc><lastmod>2025-10-19T04:05:26.640Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/features</loc><lastmod>2025-10-19T04:05:26.640Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/admin</loc><lastmod>2025-10-19T04:05:26.640Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/dashboard</loc><lastmod>2025-10-19T04:05:26.640Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/privacy</loc><lastmod>2025-10-19T04:05:26.640Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop</loc><lastmod>2025-10-19T04:05:26.640Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/terms</loc><lastmod>2025-10-19T04:05:26.640Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/pricing</loc><lastmod>2025-10-19T04:05:26.641Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/user-verify</loc><lastmod>2025-10-19T04:05:26.641Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/verify-payout-account</loc><lastmod>2025-10-19T04:05:26.641Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://zeevo.shop/test</loc><lastmod>2025-10-19T04:05:26.641Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 </urlset>

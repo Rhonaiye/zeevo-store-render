@@ -30,6 +30,7 @@ const fontOptions = [
   { value: 'Nunito', label: 'Nunito' },
   { value: 'Montserrat', label: 'Montserrat' },
   { value: 'Saira', label: 'Saira' },
+  {value: 'Titillium Web', label: 'Titillium'}
 ];
 
 const StoreForm: React.FC<StoreFormProps> = ({

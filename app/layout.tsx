@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Montserrat, Nunito, Inter, Jost, Saira, Bricolage_Grotesque } from "next/font/google";
+import { Geist, Geist_Mono, Montserrat, Nunito, Inter, Jost, Saira, Bricolage_Grotesque, Titillium_Web } from "next/font/google";
 import "./globals.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -11,6 +11,12 @@ const JostFont = Jost({ subsets: ['latin'], weight: ['400', '500', '600', '700']
 const SairaFont = Saira({ subsets: ['latin'], weight: ['400', '500', '600', '700'], display: 'swap', variable: '--font-saira' });
 const NunitoSans = Nunito({ subsets: ['latin'], weight: ['400', '600', '700'], variable: '--font-nunito', display: 'swap' });
 const InterFont = Inter({ subsets: ['latin'], weight: ['400', '500', '700'], variable: '--font-inter', display: 'swap' });
+const TitilliumFont = Titillium_Web({
+  subsets: ["latin"], 
+  weight: ["200","300","400","600","700","900"],
+  variable: '--font-titillium', 
+  display: "swap",       
+});
 
 
 
@@ -79,7 +85,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} ${MontserratFont.variable} ${NunitoSans.variable} ${InterFont.variable} ${JostFont.variable} ${SairaFont.variable} ${BricolageFont.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${MontserratFont.variable} ${NunitoSans.variable} ${InterFont.variable} ${JostFont.variable} ${SairaFont.variable} ${BricolageFont.variable} ${TitilliumFont.variable} antialiased`}>
        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
           {children}
        </GoogleOAuthProvider>

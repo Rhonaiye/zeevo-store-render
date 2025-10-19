@@ -37,6 +37,7 @@ const SleekStoreTemplate: React.FC<SleekStoreTemplateProps> = ({ store, isPrevie
     slug = name.toLowerCase().replace(/\s+/g, '-'),
     description,
     logo,
+    heroImage,
     primaryColor = '#059669',
     secondaryColor = '#d97706',
     currency = 'USD',
@@ -150,7 +151,7 @@ const SleekStoreTemplate: React.FC<SleekStoreTemplateProps> = ({ store, isPrevie
         getTotalItems={getTotalItems}
         setIsCartOpen={setIsCartOpen}
       />
-      <HeroSection name={name} description={description} secondaryColor={secondaryColor}/>
+      <HeroSection name={name} heroImage={heroImage} description={description} secondaryColor={secondaryColor}/>
       <section id="products" className="max-w-6xl mx-auto max-sm:px-2 px-4 pt-16 pb-32">
         <div className="mb-6 text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">

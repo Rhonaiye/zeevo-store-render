@@ -81,6 +81,8 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
   const [pendingVisibilityState, setPendingVisibilityState] = useState<boolean | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [heroFile, setHeroFile] = useState<File | null>(null);
+  const [heroPreviewUrl, setHeroPreviewUrl] = useState<string | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState<Store | null>(null);
   const [appearanceSettings, setAppearanceSettings] = useState<{ template: string; font: string } | null>(null);
   const [showUpgradeOverlay, setShowUpgradeOverlay] = useState<boolean>(false);
@@ -101,6 +103,7 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
     { value: 'Nunito', label: 'Nunito' },
     { value: 'Montserrat', label: 'Montserrat' },
     { value: 'Saira', label: 'Saira' },
+    {value: 'Titillium Web', label: 'Titillium'}
   ];
 
   // ------------------------------------------
@@ -159,6 +162,18 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
       setLogoPreviewUrl(null);
     }
   }, [logoFile]);
+
+  // Hero Preview Effect
+  useEffect(() => {
+    if (heroFile) {
+      const objectUrl = URL.createObjectURL(heroFile);
+      setHeroPreviewUrl(objectUrl);
+      // Cleanup the object URL when component unmounts or file changes
+      return () => URL.revokeObjectURL(objectUrl);
+    } else {
+      setHeroPreviewUrl(null);
+    }
+  }, [heroFile]);
 
   // ------------------------------------------
   // Handler Functions
@@ -357,6 +372,55 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
       addNotification('Store logo uploaded successfully', 'success');
       setLogoFile(null);
       setLogoPreviewUrl(null);
+    } catch (error: unknown) {
+      addNotification(`Error: ${(error as Error).message}`, 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleHeroUpload = async () => {
+    const token = Cookies.get('token');
+    if (!token || !selectedStore?._id || !heroFile) {
+      addNotification('Authentication error, no store selected, or no hero file selected. Please try again.', 'error');
+      return;
+    }
+
+    if (!['image/png', 'image/jpeg', 'image/jpg'].includes(heroFile.type)) {
+      addNotification('Please upload a valid image (PNG, JPEG, or JPG)', 'error');
+      return;
+    }
+
+    if (heroFile.size > 5 * 1024 * 1024) { // 5MB limit
+      addNotification('Image size must be less than 5MB', 'error');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const formData = new FormData();
+      formData.append('hero_image', heroFile);
+
+      const response = await retryFetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/store/upload-hero-image/${selectedStore._id}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to upload hero image');
+      const updatedProfile = await fetchUserProfile();
+      if (updatedProfile) {
+        setUserProfile(updatedProfile);
+        setSelectedStore(updatedProfile.stores?.[0] || null);
+      }
+      addNotification('Store hero image uploaded successfully', 'success');
+      setHeroFile(null);
+      setHeroPreviewUrl(null);
     } catch (error: unknown) {
       addNotification(`Error: ${(error as Error).message}`, 'error');
     } finally {
@@ -646,7 +710,7 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
         {store.shipping?.enabled ? (
           store.shipping.locations.length > 0 ? (
             <div className="space-y-3">
-              {store.shipping.locations.map((location, index) => (
+              {store.shipping.locations.map((location: ShippingLocation, index: number) => (
                 <div key={index} className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm border border-gray-200">
                   <Truck className="w-5 h-5 text-gray-900" />
                   <div>
@@ -711,7 +775,7 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
   const ProductsTab = () => (
     <div className="space-y-4">
       {store.products && store.products.length > 0 ? (
-        store.products.map((product) => (
+        store.products.map((product: Product) => (
           <div key={product._id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
             <div className="flex gap-4">
               <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
@@ -836,6 +900,33 @@ const RenderStoreManagement: React.FC<RenderStoreManagementProps> = ({ addNotifi
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 onClick={handleLogoUpload}
+                className="bg-[#16A34A] text-white px-3 py-2 rounded-full text-sm font-semibold flex items-center gap-1 disabled:opacity-50"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Upload'}
+              </motion.button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/jpg"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHeroFile(e.target.files?.[0] || null)}
+              className="hidden"
+              id="hero-upload"
+              disabled={isSubmitting}
+            />
+            <label
+              htmlFor="hero-upload"
+              className="flex items-center gap-2 text-sm text-[#16A34A] hover:text-[#15803D] cursor-pointer bg-[#C4FEC8]/50 px-3 py-2 rounded-full"
+            >
+              <Image className="w-4 h-4" />
+              Hero
+            </label>
+            {heroFile && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                onClick={handleHeroUpload}
                 className="bg-[#16A34A] text-white px-3 py-2 rounded-full text-sm font-semibold flex items-center gap-1 disabled:opacity-50"
                 disabled={isSubmitting}
               >

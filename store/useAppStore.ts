@@ -87,6 +87,7 @@ export interface Store {
   slug: string;
   description?: string;
   logo?: string;
+  heroImage?: string;
   primaryColor?: string;
   secondaryColor?: string;
   currency: string;
