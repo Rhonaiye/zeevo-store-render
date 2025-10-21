@@ -153,7 +153,7 @@ const VerifyKYC: React.FC = () => {
                   value={formData.nin}
                   onChange={handleChange}
                   maxLength={11}
-                  className="w-full border border-gray-300 rounded-lg p-2.5 text-sm md:text-base focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 text-base md:text-base focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
                 />
               </div>
 
