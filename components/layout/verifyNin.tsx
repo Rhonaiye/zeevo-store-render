@@ -93,7 +93,7 @@ const VerifyKYC: React.FC = () => {
           />
         )}
         <span className="relative z-10">
-          {isOpen ? 'Close' : 'Complete KYC'}
+          {isOpen ? 'Close' : 'Complete KYC to recieve payments'}
         </span>
       </motion.button>
 
