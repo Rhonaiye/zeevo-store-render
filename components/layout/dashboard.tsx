@@ -20,6 +20,7 @@ import { QuickStat, UserProfile, ActionCard } from '@/store/useAppStore';
 import Cookies from 'js-cookie';
 import { useAppStore } from '@/store/useAppStore';
 import { useRouter } from 'next/navigation';
+import VerifyNin from './verifyNin';
 
 // Interface
 interface RenderDashboardProps {
@@ -594,6 +595,7 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
             <StoreStatus />
             <ActionCardsSection />
             <HelpSection />
+            <VerifyNin/>
           </motion.div>
         )}
       </AnimatePresence>
