@@ -12,6 +12,8 @@ import SubscriptionManagement from '@/components/admin/layout/subscriptionManage
 import AdminManagement from '@/components/admin/layout/settingsManagement';
 import SettingsManagement from '@/components/admin/layout/settingsManagement';
 import ProductManagement from '@/components/admin/layout/productManagement';
+import CustomerCareChat from '@/components/ui/customerCareChat';
+import AdminCustomerCare from '@/components/admin/layout/customerCare';
 
 // Types
 interface Customer {
@@ -147,6 +149,10 @@ const ZeevoAdminDashboard: React.FC = () => {
 
       case 'products':
         return <ProductManagement/>; 
+
+      case 'customer_care':
+        return <AdminCustomerCare/>; 
+
       default:
         return <div className="text-center py-12 text-gray-600">{activeTab} management coming soon...</div>;
     }

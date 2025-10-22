@@ -33,6 +33,7 @@ import Features from '@/components/landing/features';
 import Reviews from '@/components/landing/reviews';
 import Pricing from '@/components/landing/pricing';
 import Footer from '@/components/landing/footer';
+import CustomerCareChat from '@/components/ui/customerCareChat';
 
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -87,6 +88,8 @@ export default function Home() {
         titleWide
         highlightLastTwoWords
       />
+
+      <CustomerCareChat/>
 
       {/* Footer */}
       <Footer />

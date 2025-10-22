@@ -29,6 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, sidebarOpen,
     { id: 'stores', label: 'Stores', icon: Store },
     { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
     { id: 'products', label: 'products', icon: BarChart3 },
+    { id: 'customer_care', label: 'Customer Care', icon: Users },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
