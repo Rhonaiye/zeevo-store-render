@@ -95,7 +95,7 @@ const AdminCustomerCare: React.FC = () => {
 
   const fetchConversations = async () => {
     try {
-      const res = await axios.get("http://localhost:4000/api/conversations");
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/conversations`);
       setConversations(res.data);
     } catch (err) {
       console.error(err);
@@ -115,7 +115,7 @@ const AdminCustomerCare: React.FC = () => {
     });
 
     try {
-      const res = await axios.get(`http://localhost:4000/api/conversations/${convo._id}/messages`);
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/conversations/${convo._id}/messages`);
       setMessages(res.data);
       scrollToBottom();
     } catch {
