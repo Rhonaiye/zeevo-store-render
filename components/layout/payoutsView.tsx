@@ -18,7 +18,7 @@ interface Payout {
     transactionId?: string;
     notes?: string;
     splitCode?: string;
-    bankDetails: BankDetails;
+    bankDetails?: BankDetails;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -98,26 +98,26 @@ const PayoutsView: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-            const token = Cookies.get('token');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/payouts`, {
-                headers: {
-                Authorization: token ? `Bearer ${token}` : '',
-                },
-            });
-            if (!res.ok) throw new Error('Failed to fetch payouts');
-            const data = await res.json();
-            console.log('Fetched payouts:', data);
-            // Convert date strings to Date objects
-            const payoutsData: Payout[] = data.userPayouts.map((p: any) => ({
-                ...p,
-                requestedAt: new Date(p.requestedAt),
-                processedAt: p.processedAt ? new Date(p.processedAt) : undefined,
-            }));
-            setPayouts(payoutsData);
+                const token = Cookies.get('token');
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/payouts`, {
+                    headers: {
+                        Authorization: token ? `Bearer ${token}` : '',
+                    },
+                });
+                if (!res.ok) throw new Error('Failed to fetch payouts');
+                const data = await res.json();
+                console.log('Fetched payouts:', data);
+                // Convert date strings to Date objects
+                const payoutsData: Payout[] = (data.userPayouts || []).map((p: any) => ({
+                    ...p,
+                    requestedAt: new Date(p.requestedAt),
+                    processedAt: p.processedAt ? new Date(p.processedAt) : undefined,
+                }));
+                setPayouts(payoutsData);
             } catch (err: any) {
-            setError(err.message || 'Error fetching payouts');
+                setError(err.message || 'Error fetching payouts');
             } finally {
-            setLoading(false);
+                setLoading(false);
             }
         };
         fetchPayouts();
@@ -148,7 +148,7 @@ const PayoutsView: React.FC = () => {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-gray-500">
                 <div className="text-xs font-medium mb-2">No payouts yet</div>
-                <p className="text-xs">No payouts yet — they’ll appear once a product is bought.</p>
+                <p className="text-xs">No payouts yet — they'll appear once a product is bought.</p>
             </div>
         );
     }
@@ -195,8 +195,8 @@ const PayoutsView: React.FC = () => {
                                         {payout.status.charAt(0).toUpperCase() + payout.status.slice(1)}
                                     </span>
                                 </td>
-                                <td className="px-3 py-2 text-xs">{payout.bankDetails.bankName}</td>
-                                <td className="px-3 py-2 text-xs">****{payout.bankDetails.accountNumber.slice(-4)}</td>
+                                <td className="px-3 py-2 text-xs">{payout.bankDetails?.bankName || '-'}</td>
+                                <td className="px-3 py-2 text-xs">{payout.bankDetails?.accountNumber ? `****${payout.bankDetails.accountNumber.slice(-4)}` : '-'}</td>
                                 <td className="px-3 py-2 text-xs">{payout.transactionId || '-'}</td>
                                 <td className="px-3 py-2 text-xs">{payout.processedAt ? new Date(payout.processedAt).toLocaleDateString() : '-'}</td>
                                 <td className="px-3 py-2 text-xs">{payout.notes || '-'}</td>
@@ -218,8 +218,8 @@ const PayoutsView: React.FC = () => {
                         </div>
                         <div className="mt-2">
                             <div><span className="font-medium">Amount:</span> {payout.amount} {payout.currency}</div>
-                            <div><span className="font-medium">Bank:</span> {payout.bankDetails.bankName}</div>
-                            <div><span className="font-medium">Acct:</span> ****{payout.bankDetails.accountNumber.slice(-4)}</div>
+                            <div><span className="font-medium">Bank:</span> {payout.bankDetails?.bankName || '-'}</div>
+                            <div><span className="font-medium">Acct:</span> {payout.bankDetails?.accountNumber ? `****${payout.bankDetails.accountNumber.slice(-4)}` : '-'}</div>
                             <div><span className="font-medium">Tx ID:</span> {payout.transactionId || '-'}</div>
                             <div><span className="font-medium">Processed:</span> {payout.processedAt ? new Date(payout.processedAt).toLocaleDateString() : '-'}</div>
                             <div><span className="font-medium">Notes:</span> {payout.notes || '-'}</div>
