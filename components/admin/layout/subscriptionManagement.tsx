@@ -14,7 +14,7 @@ interface User {
 
 interface Subscription {
   _id: string;
-  userId: User;
+  userId: User | null;
   planName: string;
   amount: number;
   currency: string;
@@ -229,7 +229,7 @@ const SubscriptionManagement: React.FC = () => {
                 ) : (
                   subscriptions.map(subscription => (
                     <tr key={subscription._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-gray-500 text-sm">{subscription.userId.email}</td>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-gray-500 text-sm">{subscription.userId?.email || 'N/A'}</td>
                       <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-gray-900">{subscription.planName}</td>
                       <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-gray-500">
                         {subscription.amount.toLocaleString()} {subscription.currency}

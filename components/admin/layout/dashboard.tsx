@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Store, DollarSign, ShoppingBag, Clock, Loader2 } from 'lucide-react';
-import { ResponsiveContainer, LineChart, Line, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
+import { Users, Store, DollarSign, ShoppingBag, Clock, Loader2, Zap, TrendingUp, Activity, BarChart3 } from 'lucide-react';
+import { ResponsiveContainer, LineChart, Line, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Area } from 'recharts';
 
 // Types
 interface Store {
@@ -48,15 +48,16 @@ interface ApiData {
 
 // Shared Utility Components
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
-  const colors: Record<string, string> = {
-    active: 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/30',
-    suspended: 'bg-rose-500/10 text-rose-600 ring-rose-500/30',
-    pending: 'bg-amber-500/10 text-amber-600 ring-amber-500/30',
-    paid: 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/30',
-    failed: 'bg-rose-500/10 text-rose-600 ring-rose-500/30',
+  const colors: Record<string, { bg: string; text: string; ring: string }> = {
+    active: { bg: 'bg-black/10', text: 'text-black', ring: 'ring-black/20' },
+    suspended: { bg: 'bg-black/10', text: 'text-black', ring: 'ring-black/20' },
+    pending: { bg: 'bg-black/5', text: 'text-black/60', ring: 'ring-black/10' },
+    paid: { bg: 'bg-black/10', text: 'text-black', ring: 'ring-black/20' },
+    failed: { bg: 'bg-black/10', text: 'text-black', ring: 'ring-black/20' },
   };
+  const color = colors[status] || { bg: 'bg-black/5', text: 'text-black/60', ring: 'ring-black/10' };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ring-1 ring-inset transition-all duration-300 hover:ring-2 ${colors[status] || 'bg-gray-100 text-gray-600 ring-gray-200'}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset ${color.bg} ${color.text} ${color.ring}`}>
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
@@ -72,25 +73,28 @@ interface MetricCardProps {
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon: Icon, color, trendData }) => (
-  <div className={`rounded-xl p-4 shadow-lg border bg-gradient-to-br from-white to-gray-50 border-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 hover:scale-105`}>
-    <div className="flex items-center justify-between">
+  <div className={`relative rounded-2xl p-4 shadow-lg border bg-white border-black/10 overflow-hidden`}>
+    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+    <div className="relative z-10 flex items-center justify-between">
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-gray-500 tracking-wide uppercase">{title}</p>
-        <p className="text-2xl font-extrabold text-gray-900 tracking-tight">{value}</p>
-        <p className={`text-xs font-medium ${change >= 0 ? 'text-emerald-500' : 'text-rose-500'} flex items-center gap-1`}>
-          {change >= 0 ? '+' : ''}{change}% <span className="text-[10px] text-gray-400">vs last month</span>
+        <p className="text-xs font-bold tracking-widest uppercase text-black/50">{title}</p>
+        <p className="text-xl font-black text-black">{value}</p>
+        <p className={`text-xs font-bold flex items-center gap-1 text-black/70`}>
+          <Zap className="h-3 w-3" /> {change >= 0 ? '+' : ''}{change}% <span className="text-xs text-black/40">Δ last cycle</span>
         </p>
       </div>
-      <div className={`p-2 rounded-full ${color} transform transition-transform duration-300 hover:scale-110 hover:rotate-6`}>
-        <Icon className="h-6 w-6 text-white" />
+      <div className={`p-2 rounded-xl ${color} shadow-md`}>
+        <Icon className="h-5 w-5 text-white" />
       </div>
     </div>
     {trendData && (
-      <ResponsiveContainer width="100%" height={40}>
-        <LineChart data={trendData}>
-          <Line type="monotone" dataKey="value" stroke="#7C3AED" strokeWidth={1.5} dot={false} strokeDasharray={change < 0 ? "3 3" : undefined} />
-        </LineChart>
-      </ResponsiveContainer>
+      <div className="mt-3 h-8 overflow-hidden">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={trendData}>
+            <Line type="monotone" dataKey="value" stroke="#000" strokeWidth={1.5} dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     )}
   </div>
 );
@@ -142,30 +146,40 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-48 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+      <div className="flex justify-center items-center h-48 bg-white rounded-2xl border border-black/10 shadow-lg">
+        <div className="relative">
+          <Loader2 className="h-8 w-8 text-black animate-spin" />
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center text-rose-500 text-sm font-semibold bg-rose-50 p-4 rounded-xl shadow-md">
+      <div className="text-center text-black bg-black/5 p-4 rounded-2xl shadow-lg border border-black/10">
+        <Activity className="h-6 w-6 mx-auto mb-2 text-black" />
         {error}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-screen">
+    <div className="space-y-6 p-4 lg:p-6 min-h-screen bg-white relative overflow-hidden">
+      {/* Static background elements */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-black/5 rounded-full mix-blend-multiply filter blur-xl" />
+        <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-black/5 rounded-full mix-blend-multiply filter blur-xl" />
+        <div className="absolute bottom-1/4 left-1/2 w-64 h-64 bg-black/5 rounded-full mix-blend-multiply filter blur-xl" />
+      </div>
+
       {/* Metrics Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
         <MetricCard
           title="Total Users"
           value={data?.totals?.users || 0}
-          change={12}
+          change={80}
           icon={Users}
-          color="bg-gradient-to-tr from-violet-600 to-indigo-500"
+          color="bg-black"
           trendData={data?.recentOrders?.map(order => ({
             date: new Date(order.createdAt).toLocaleDateString(),
             value: 1,
@@ -176,18 +190,18 @@ const Dashboard: React.FC = () => {
           value={data?.totals?.stores || 0}
           change={8}
           icon={Store}
-          color="bg-gradient-to-tr from-gray-700 to-gray-900"
+          color="bg-black"
           trendData={data?.recentStores?.map(store => ({
             date: new Date(store.createdAt).toLocaleDateString(),
             value: 1,
           }))}
         />
         <MetricCard
-          title="Monthly Revenue"
+          title="Revenue"
           value={`₦${data?.totals?.revenue?.toLocaleString('en-NG') || 0}`}
           change={15}
           icon={DollarSign}
-          color="bg-gradient-to-tr from-violet-600 to-indigo-500"
+          color="bg-black"
           trendData={aggregatedChartData.map(t => ({ date: t.date, value: t.revenue }))}
         />
         <MetricCard
@@ -195,77 +209,90 @@ const Dashboard: React.FC = () => {
           value={data?.totals?.orders || 0}
           change={-3}
           icon={ShoppingBag}
-          color="bg-gradient-to-tr from-gray-700 to-gray-900"
+          color="bg-black"
           trendData={aggregatedChartData.map(t => ({ date: t.date, value: t.orders }))}
         />
       </div>
 
       {/* Chart Section */}
-      <div className="rounded-xl p-6 shadow-lg border bg-gradient-to-br from-white to-gray-50 border-gray-100 transition-all duration-300 hover:shadow-xl">
+      <div className="relative z-10 rounded-2xl p-6 shadow-lg bg-white border border-black/10">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900 tracking-tight">Revenue & Orders</h3>
+          <div className="flex items-center space-x-2">
+            <div className="p-2 rounded-xl bg-black">
+              <BarChart3 className="h-4 w-4 text-white" />
+            </div>
+            <h3 className="text-sm font-bold text-black">Revenue & Orders</h3>
+          </div>
           <div className="flex space-x-2">
             <button
               onClick={() => setChartRange('week')}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300 ${chartRange === 'week' ? 'bg-violet-600 text-white shadow-md hover:shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              className={`px-3 py-1 rounded-full text-xs font-bold border border-black/20 ${chartRange === 'week' ? 'bg-black text-white' : 'text-black/70 hover:bg-black/5'}`}
             >
               Week
             </button>
             <button
               onClick={() => setChartRange('month')}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300 ${chartRange === 'month' ? 'bg-violet-600 text-white shadow-md hover:shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              className={`px-3 py-1 rounded-full text-xs font-bold border border-black/20 ${chartRange === 'month' ? 'bg-black text-white' : 'text-black/70 hover:bg-black/5'}`}
             >
               Month
             </button>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={280}>
           <BarChart data={aggregatedChartData}>
-            <CartesianGrid strokeDasharray="4 4" stroke="#E5E7EB" opacity={0.3} />
-            <XAxis dataKey="date" stroke="#4B5563" tick={{ fontSize: 10, fontWeight: 500 }} />
-            <YAxis stroke="#4B5563" tick={{ fontSize: 10, fontWeight: 500 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+            <XAxis dataKey="date" stroke="#000" tick={{ fontSize: 10, fontWeight: 500 }} />
+            <YAxis stroke="#000" tick={{ fontSize: 10, fontWeight: 500 }} />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#FFFFFF',
-                border: 'none',
+                backgroundColor: 'white',
+                border: '1px solid #E5E7EB',
                 borderRadius: '8px',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                fontSize: '12px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                fontSize: '11px',
                 padding: '8px',
               }}
+              labelStyle={{ color: '#000', fontWeight: 'bold' }}
+              itemStyle={{ color: '#000' }}
             />
-            <Bar dataKey="revenue" fill="#7C3AED" radius={[8, 8, 0, 0]} barSize={20} />
-            <Line type="monotone" dataKey="orders" stroke="#10B981" strokeWidth={2} dot={false} />
+            <Bar dataKey="revenue" fill="#000" radius={[6, 6, 0, 0]} barSize={18} />
+            <Line type="monotone" dataKey="orders" stroke="#000" strokeWidth={2} dot={{ fill: '#000', strokeWidth: 1, r: 3 }} activeDot={{ r: 5, fill: '#000' }} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       {/* Recent Stores and Activity Feed */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Recent Stores */}
-        <div className="rounded-xl p-6 shadow-lg border bg-gradient-to-br from-white to-gray-50 border-gray-100 transition-all duration-300 hover:shadow-xl">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 relative z-10">
+        {/* Top Stores */}
+        <div className="rounded-2xl p-6 shadow-lg bg-white border border-black/10">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-gray-900 tracking-tight">Top Stores</h3>
-            <button className="text-violet-600 hover:text-violet-500 text-xs font-semibold transition-colors duration-300 hover:underline">
-              View all
+            <div className="flex items-center space-x-2">
+              <div className="p-2 rounded-xl bg-black">
+                <TrendingUp className="h-4 w-4 text-white" />
+              </div>
+              <h3 className="text-sm font-bold text-black">Top Stores</h3>
+            </div>
+            <button className="text-black hover:text-black/80 text-xs font-bold flex items-center gap-1">
+              View all <Zap className="h-3 w-3" />
             </button>
           </div>
-          <div className="space-y-4">
-            {data?.topStoresByOrders?.slice(0, 4).map(store => (
+          <div className="space-y-3">
+            {data?.topStoresByOrders?.slice(0, 4).map((store) => (
               <div
                 key={store._id}
-                className="flex items-center justify-between p-4 rounded-lg bg-white/50 border border-gray-100/50 transition-all duration-300 hover:bg-violet-50/50 hover:shadow-md hover:-translate-y-0.5"
+                className="flex items-center justify-between p-4 rounded-xl bg-black/5 border border-black/10"
               >
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm font-semibold text-gray-900">{store.store.name}</span>
+                    <div className="w-2 h-2 rounded-full bg-black" />
+                    <span className="text-sm font-bold text-black">{store.store.name}</span>
                     <StatusBadge status={store.store.isPublished ? 'active' : 'pending'} />
                   </div>
-                  <p className="text-xs text-gray-500">{store.store.products.length} products</p>
+                  <p className="text-xs text-black/50">{store.store.products.length} products</p>
                 </div>
                 <div className="text-right space-y-1">
-                  <p className="text-sm font-semibold text-gray-900">{store.store.analytics.totalViews} views</p>
-                  <p className="text-[10px] text-gray-500">{new Date(store.store.createdAt).toLocaleDateString()}</p>
+                  <p className="text-sm font-bold text-black">{store.store.analytics.totalViews.toLocaleString()} views</p>
+                  <p className="text-xs text-black/50">{new Date(store.store.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
             ))}
@@ -273,24 +300,31 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Activity Feed */}
-        <div className="rounded-xl p-6 shadow-lg border bg-gradient-to-br from-white to-gray-50 border-gray-100 transition-all duration-300 hover:shadow-xl">
+        <div className="rounded-2xl p-6 shadow-lg bg-white border border-black/10">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-gray-900 tracking-tight">Recent Activity</h3>
-            <button className="text-violet-600 hover:text-violet-500 text-xs font-semibold transition-colors duration-300 hover:underline">
-              View all
+            <div className="flex items-center space-x-2">
+              <div className="p-2 rounded-xl bg-black">
+                <Activity className="h-4 w-4 text-white" />
+              </div>
+              <h3 className="text-sm font-bold text-black">Recent Activity</h3>
+            </div>
+            <button className="text-black hover:text-black/80 text-xs font-bold flex items-center gap-1">
+              View all <Zap className="h-3 w-3" />
             </button>
           </div>
-          <div className="space-y-4">
-            {data?.recentOrders?.slice(0, 5).map(order => (
+          <div className="space-y-3">
+            {data?.recentOrders?.slice(0, 5).map((order) => (
               <div
                 key={order._id}
-                className="flex items-start space-x-3 p-4 rounded-lg bg-white/50 border border-gray-100/50 transition-all duration-300 hover:bg-violet-50/50 hover:shadow-md hover:-translate-y-0.5"
+                className="flex items-start space-x-3 p-4 rounded-xl bg-black/5 border border-black/10"
               >
-                <Clock className="h-5 w-5 text-violet-500 mt-0.5" />
+                <div className="p-2 rounded-full bg-black mt-0.5">
+                  <Clock className="h-3 w-3 text-white" />
+                </div>
                 <div className="flex-1">
-                  <p className="text-xs font-medium text-gray-900">Order placed for ₦{order.totalAmount.toLocaleString('en-NG')}</p>
-                  <p className="text-[10px] text-gray-500 mt-1">
-                    {order.customer?.fullName || 'Customer'} • {new Date(order.createdAt).toLocaleString()}
+                  <p className="text-xs font-bold text-black">Order: ₦{order.totalAmount.toLocaleString('en-NG')}</p>
+                  <p className="text-xs text-black/50 mt-1 flex items-center gap-2">
+                    {order.customer?.fullName || 'Customer'} • {new Date(order.createdAt).toLocaleString()} <div className="w-1 h-1 rounded-full bg-black/40" />
                   </p>
                 </div>
               </div>
