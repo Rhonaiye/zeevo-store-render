@@ -11,7 +11,7 @@ interface Message {
   timestamp: string;
 }
 
-const socket: Socket = io("http://localhost:4000"); // replace with your server URL
+const socket: Socket = io("https://zeevo-backend-production.up.railway.app"); // replace with your server URL
 
 const formatTime = (timestamp: string) => {
   const date = new Date(timestamp);
