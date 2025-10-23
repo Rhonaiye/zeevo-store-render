@@ -228,7 +228,7 @@ const CustomerCareChat: React.FC = () => {
             right: isMobile ? 0 : 24,
             left: isMobile ? 0 : "auto",
             width: isMobile ? "100vw" : "380px",
-            height: isMobile ? "90vh" : "600px",
+            height: isMobile ? "80vh" : "600px",
             borderRadius: isMobile ? 0 : 16,
             backgroundColor: "#fff",
             boxShadow: isMobile ? "none" : "0 20px 60px rgba(0, 0, 0, 0.15)",
@@ -339,7 +339,7 @@ const CustomerCareChat: React.FC = () => {
                       border: "none", 
                       outline: "none", 
                       background: "transparent", 
-                      fontSize: isMobile ? "14px" : "15px", 
+                      fontSize: isMobile ? "15px" : "15px", 
                       color: "#303030" 
                     }}
                   />
