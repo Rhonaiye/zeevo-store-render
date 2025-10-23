@@ -27,7 +27,7 @@ const Navbar = () => {
   return (
     <nav className="relative flex items-center justify-between px-4 py-3 md:px-5 md:py-0 bg-[#E2FEE4]" aria-label="Main navigation">
       {/* Left: Logo */}
-      <div className="flex items-center z-10 -my-6">
+      <div className="flex items-center z-10 -my-7">
         <div className="w-[120px] h-[120px] md:w-[120px] md:h-[120px] relative">
           <img
             src="/zeevo-logo.png"
