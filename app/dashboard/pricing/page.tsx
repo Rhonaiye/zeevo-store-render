@@ -66,7 +66,7 @@ const PricingPage: React.FC = () => {
         body: JSON.stringify({
           plan: planType,
           billingCycle: billingCycle,
-          successUrl: `${window.location.origin}/dashboard?upgrade=success`,
+          successUrl: `${window.location.origin}/payment-success`,
           cancelUrl: `${window.location.origin}/dashboard?upgrade=canceled`,
         }),
       });
@@ -202,7 +202,7 @@ const PricingPage: React.FC = () => {
   const renderFeatureValue = (value: string | boolean): React.ReactNode => {
     if (typeof value === 'boolean') {
       return value ? (
-        <Check className="w-5 h-5 text-green-500 mx-auto" />
+        <Check className="w-5 h-5 text-[#03E525] mx-auto" />
       ) : (
         <span className="text-gray-400 text-sm">—</span>
       );
@@ -228,10 +228,10 @@ const PricingPage: React.FC = () => {
       />
 
       {/* Back Button */}
-      <div className="max-w-6xl px-6 pt-8">
+      <div className="max-w-6xl px-6 pt-8 pb-8">
         <button 
           onClick={() => window.location.href = '/dashboard'}
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors group mb-4"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-[#03E525] transition-colors group mb-4"
         >
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
           Back to Dashboard
@@ -239,14 +239,14 @@ const PricingPage: React.FC = () => {
       </div>
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-indigo-50 via-white to-cyan-50 pt-16 pb-20">
+      <div className="bg-gradient-to-br from-[#E2FEE4] via-white to-[#E2FEE4] pt-16 pb-20">
         <div className="max-w-4xl mx-auto text-center px-6">
           <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full text-sm text-gray-700 mb-8 font-medium border border-white/20">
-            <Star className="w-5 h-5 text-yellow-500" />
+            <Star className="w-5 h-5 text-[#03E525]" />
             Transparent pricing for every business size
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-            Pricing Built for <span className="text-indigo-600">Store Growth</span>
+            Pricing Built for <span className="text-[#03E525]">Store Growth</span>
           </h1>
           <p className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
             Choose the plan that suits your online store. Free plan stores are private and not visible to customers; paid plans are public.
@@ -259,13 +259,13 @@ const PricingPage: React.FC = () => {
         <div className="flex justify-center mb-16">
           <div className="bg-white rounded-lg p-1 flex items-center border border-gray-200 shadow-lg">
             <button
-              className={`px-8 py-4 rounded-md text-base font-medium transition ${!isAnnual ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+              className={`px-8 py-4 rounded-md text-base font-medium transition ${!isAnnual ? 'bg-[#03E525] text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
               onClick={() => setIsAnnual(false)}
             >
               Monthly
             </button>
             <button
-              className={`px-8 py-4 rounded-md text-base font-medium transition ${isAnnual ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+              className={`px-8 py-4 rounded-md text-base font-medium transition ${isAnnual ? 'bg-[#03E525] text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
               onClick={() => setIsAnnual(true)}
             >
               Yearly (5% Off)
@@ -280,13 +280,13 @@ const PricingPage: React.FC = () => {
               key={index}
               className={`relative bg-white p-8 rounded-2xl border transition-all duration-300 flex flex-col ${
                 plan.popular 
-                  ? 'border-indigo-200 shadow-xl shadow-indigo-600/20 scale-105' 
+                  ? 'border-[#E2FEE4] shadow-xl shadow-[#03E525]/20 scale-105' 
                   : 'border-gray-200 hover:shadow-lg'
               }`}
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg">
+                  <span className="bg-gradient-to-r from-[#03E525] to-[#02CE21] text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg">
                     Most Popular
                   </span>
                 </div>
@@ -294,7 +294,7 @@ const PricingPage: React.FC = () => {
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
                 <p className="text-gray-600 text-sm mb-4">{plan.description}</p>
-                <div className="text-5xl font-bold text-indigo-600 mb-2">{plan.price}</div>
+                <div className="text-5xl font-bold text-[#03E525] mb-2">{plan.price}</div>
                 <div className="text-gray-600">{plan.period}</div>
               </div>
               
@@ -308,7 +308,7 @@ const PricingPage: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <Check className="w-5 h-5 text-[#03E525] flex-shrink-0 mt-0.5" />
                         <span className="text-gray-600">{typeof feature === 'string' ? feature : feature.text}</span>
                       </>
                     )}
@@ -323,8 +323,8 @@ const PricingPage: React.FC = () => {
                   plan.disabled
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : plan.popular
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-600/25 disabled:opacity-70 disabled:cursor-not-allowed'
-                    : 'bg-gray-100 text-indigo-600 hover:bg-indigo-50 border border-indigo-200 disabled:opacity-70 disabled:cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-[#03E525] to-[#02CE21] text-white hover:from-[#02B71D] hover:to-[#02A019] shadow-lg shadow-[#03E525]/25 disabled:opacity-70 disabled:cursor-not-allowed'
+                    : 'bg-[#E2FEE4] text-[#03E525] hover:bg-[#CBE4CD] border border-[#E2FEE4] disabled:opacity-70 disabled:cursor-not-allowed'
                 }`}
               >
                 {isUpgrading && !plan.free && !plan.disabled ? 'Processing...' : plan.cta}
@@ -347,7 +347,7 @@ const PricingPage: React.FC = () => {
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Features</th>
                   <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Launch</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-indigo-600 bg-indigo-50">Boost</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-[#03E525] bg-[#E2FEE4]">Boost</th>
                   <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Thrive</th>
                 </tr>
               </thead>
@@ -367,7 +367,7 @@ const PricingPage: React.FC = () => {
                         <td className="px-6 py-4 text-center">
                           {renderFeatureValue(feature.launch)}
                         </td>
-                        <td className="px-6 py-4 text-center bg-indigo-50/50">
+                        <td className="px-6 py-4 text-center bg-[#E2FEE4]/50">
                           {renderFeatureValue(feature.boost)}
                         </td>
                         <td className="px-6 py-4 text-center">
@@ -398,7 +398,7 @@ const PricingPage: React.FC = () => {
                           {renderFeatureValue(feature.launch)}
                         </div>
                         <div className="text-center">
-                          <div className="text-xs text-indigo-600 font-medium mb-2">Boost</div>
+                          <div className="text-xs text-[#03E525] font-medium mb-2">Boost</div>
                           {renderFeatureValue(feature.boost)}
                         </div>
                         <div className="text-center">
@@ -414,46 +414,7 @@ const PricingPage: React.FC = () => {
           </div>
         </div>
 
-        {/* FAQ Section */}
-        <div className="mt-20 mb-20">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-            <p className="text-xl text-gray-600">Everything you need to know about our pricing</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I switch plans anytime?</h3>
-              <p className="text-gray-600">Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.</p>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">What's the difference between private and public stores?</h3>
-              <p className="text-gray-600">Private stores (Launch plan) are only visible to you for testing. Public stores (Boost & Thrive) are live and accessible to customers.</p>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Do you offer refunds?</h3>
-              <p className="text-gray-600">We offer a 30-day money-back guarantee for all paid plans. Contact our support team for assistance.</p>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">When will the Thrive plan be available?</h3>
-              <p className="text-gray-600">The Thrive plan is coming soon with advanced features. Join our waitlist to be notified when it launches.</p>
-            </div>
-          </div>
-        </div>
 
-        {/* CTA Section */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-12 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">Ready to start building your store?</h2>
-          <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of entrepreneurs who have chosen Zeevo to power their online stores.
-          </p>
-          <button className="bg-white text-indigo-600 px-8 py-4 rounded-lg hover:bg-indigo-50 transition font-semibold text-lg shadow-lg">
-            Get Started Today
-          </button>
-        </div>
       </div>
     </div>
   );
