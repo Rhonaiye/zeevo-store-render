@@ -1,60 +1,123 @@
 'use client';
 
-import Link from 'next/link';
-import { motion, useInView, Variants } from 'framer-motion';
-import { useState, useEffect, useRef, JSX } from 'react';
-import Image from 'next/image';
-import { ArrowRight, Check, Ban, Star, Zap, Shield, Users, Globe, TrendingUp, Palette, Menu, X, HelpCircle } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Menu, X, ArrowRight, Check, Ban, Star, Zap, Shield, Users, Globe, TrendingUp, Palette, HelpCircle } from 'lucide-react';
+import Footer from '@/components/landing/footer';
 
-// Animation variants for scroll animations
-const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-};
+const links = [
+  { label: 'Home', href: '/' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' },
+];
 
-const staggerContainer: Variants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
+// Navbar Component
+const Navbar = () => {
+  const getPath = () => (typeof window !== 'undefined' ? window.location.pathname : '/');
+  const [path, setPath] = React.useState(getPath());
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
-const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: "easeOut" } }
-};
+  React.useEffect(() => {
+    const onPop = () => setPath(getPath());
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
-// Animation wrapper component
-const ScrollAnimatedDiv: React.FC<{ 
-  children: React.ReactNode; 
-  variants?: Variants; 
-  className?: string 
-}> = ({ 
-  children, 
-  variants = fadeInUp, 
-  className = "" 
-}) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  const handleClick = (href: any, e: any) => {
+    setPath(new URL(href, window.location.href).pathname);
+    setMenuOpen(false);
+  };
 
   return (
-    <motion.div
-      ref={ref}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
-      variants={variants}
-      className={className}
-    >
-      {children}
-    </motion.div>
+    <nav className="relative flex items-center justify-between px-4 py-3 md:px-5 md:py-0 bg-[#E2FEE4]" aria-label="Main navigation">
+      <div className="flex items-center z-10 -my-7">
+        <div className="w-[120px] h-[120px] md:w-[120px] md:h-[120px] relative">
+          <img
+            src="/zeevo-logo.png"
+            alt="zeevo logo"
+            className="w-full h-full object-contain"
+          />
+        </div>
+      </div>
+
+      <div className="hidden md:flex md:absolute md:left-1/2 md:-translate-x-1/2 items-center gap-x-8">
+        {links.map(l => {
+          const active = path === l.href || (l.href === '/' && path === '/');
+          return (
+            <a
+              key={l.href}
+              href={l.href}
+              onClick={(e) => handleClick(l.href, e)}
+              className={`text-[#03E525] cursor-pointer ${
+                active
+                  ? 'font-semibold underline underline-offset-4 text-[#037834]'
+                  : 'font-medium hover:text-[#03E525]/65 transition-colors'
+              }`}
+              aria-current={active ? 'page' : undefined}
+            >
+              {l.label}
+            </a>
+          );
+        })}
+      </div>
+
+      <div className="hidden md:block">
+        <button className="px-3.5 py-2 bg-[#037834] text-white font-semibold rounded-md hover:bg-[#037834]/90 transition-colors">
+          Get Started
+        </button>
+      </div>
+
+      <button
+        className="md:hidden text-[#037834] z-50 relative"
+        onClick={() => setMenuOpen(!menuOpen)}
+        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+      >
+        {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      <div
+        className={`fixed inset-0 bg-[#E2FEE4] z-40 md:hidden transition-all duration-300 ease-in-out ${
+          menuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+        }`}
+      >
+        <div className="flex flex-col items-center justify-center h-full gap-8 px-6">
+          {links.map((l, idx) => {
+            const active = path === l.href || (l.href === '/' && path === '/');
+            return (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={(e) => handleClick(l.href, e)}
+                className={`text-3xl cursor-pointer transition-all duration-300 transform ${
+                  menuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+                } ${
+                  active
+                    ? 'font-bold text-[#037834]'
+                    : 'font-semibold text-[#03E525] hover:text-[#037834] hover:scale-110'
+                }`}
+                style={{ transitionDelay: menuOpen ? `${idx * 50}ms` : '0ms' }}
+                aria-current={active ? 'page' : undefined}
+              >
+                {l.label}
+              </a>
+            );
+          })}
+          <button 
+            className={`px-8 py-3.5 bg-[#037834] text-white text-lg font-semibold rounded-lg hover:bg-[#037834]/90 transition-all duration-300 transform hover:scale-105 mt-4 ${
+              menuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+            }`}
+            style={{ transitionDelay: menuOpen ? `${links.length * 50}ms` : '0ms' }}
+          >
+            Get Started
+          </button>
+        </div>
+      </div>
+    </nav>
   );
 };
 
-export default function PricingPage(): JSX.Element {
-  const [isAnnual, setIsAnnual] = useState<boolean>(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+export default function PricingPage() {
+  const [isAnnual, setIsAnnual] = useState(false);
   const [showFAQ, setShowFAQ] = useState<Record<number, boolean>>({});
 
   const pricingPlans = [
@@ -97,7 +160,7 @@ export default function PricingPage(): JSX.Element {
       ],
       cta: "Start Now",
       popular: true,
-      color: "indigo" as const
+      color: "green" as const
     },
     {
       name: "Thrive",
@@ -120,7 +183,7 @@ export default function PricingPage(): JSX.Element {
       cta: "Coming Soon",
       popular: false,
       disabled: true,
-      color: "purple" as const
+      color: "emerald" as const
     }
   ];
 
@@ -140,21 +203,13 @@ export default function PricingPage(): JSX.Element {
       title: "Secure & Reliable",
       description: "99.9% uptime guarantee"
     },
-    {
-      icon: <Users className="w-6 h-6" />,
-      title: "Complete Features",
-      description: "Everything you need included"
-    },
+
     {
       icon: <TrendingUp className="w-6 h-6" />,
       title: "Built-in Analytics",
       description: "Track and grow your business"
     },
-    {
-      icon: <Globe className="w-6 h-6" />,
-      title: "Global Ready",
-      description: "Multi-currency support"
-    }
+   
   ];
 
   const faqs = [
@@ -184,29 +239,29 @@ export default function PricingPage(): JSX.Element {
     }
   ];
 
-  const toggleFAQ = (index: number): void => {
+  const toggleFAQ = (index: number) => {
     setShowFAQ(prev => ({
       ...prev,
       [index]: !prev[index]
     }));
   };
 
-  const getColorClasses = (color: 'gray' | 'indigo' | 'purple', isPopular?: boolean) => {
+  const getColorClasses = (color: 'gray' | 'green' | 'emerald', isPopular?: boolean) => {
     const colors = {
       gray: {
         border: 'border-gray-200',
         button: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
         accent: 'text-gray-600'
       },
-      indigo: {
-        border: 'border-indigo-200 shadow-lg shadow-indigo-600/10',
-        button: 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-600/25',
-        accent: 'text-indigo-600'
+      green: {
+        border: 'border-[#03E525]/30 shadow-lg shadow-[#03E525]/10',
+        button: 'bg-[#037834] text-white hover:bg-[#037834]/90 shadow-lg shadow-[#037834]/25',
+        accent: 'text-[#037834]'
       },
-      purple: {
-        border: 'border-purple-200',
+      emerald: {
+        border: 'border-emerald-200',
         button: 'bg-gray-300 text-gray-500 cursor-not-allowed',
-        accent: 'text-purple-600'
+        accent: 'text-emerald-600'
       }
     };
     return colors[color];
@@ -214,172 +269,80 @@ export default function PricingPage(): JSX.Element {
 
   return (
     <main className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="sticky top-0 p-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex justify-between items-center">
-            <div className="text-xl font-bold text-gray-900">
-              <Image
-                src="/zeevo.png"
-                alt="Zeevo Logo"
-                width={84}
-                height={64}
-                className="object-contain max-w-[154px] my-0 sm:max-w-[72px] max-h-[580px]"
-                priority
-              />
-            </div>
-            <div className="hidden md:flex gap-6 items-center">
-              <Link href="/" className="text-base text-gray-600 hover:text-indigo-600 transition">Home</Link>
-              <Link href="/features" className="text-base text-gray-600 hover:text-indigo-600 transition">Features</Link>
-              <Link href="/pricing" className="text-base text-indigo-600 font-medium">Pricing</Link>
-              <Link href="/auth/login" className="text-base text-gray-600 hover:text-indigo-600 transition">Sign In</Link>
-              <Link
-                href="/auth/sign-up"
-                className="bg-indigo-600 text-white px-5 py-3 rounded-lg hover:bg-indigo-700 transition text-base font-medium"
-              >
-                Get Started
-              </Link>
-            </div>
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition"
-              >
-                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-            </div>
-          </div>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="md:hidden mt-4 pb-4 border-t border-gray-100"
-            >
-              <div className="flex flex-col space-y-3 pt-4">
-                <Link href="/" className="text-base text-gray-600 hover:text-indigo-600 transition px-2 py-1">Home</Link>
-                <Link href="/features" className="text-base text-gray-600 hover:text-indigo-600 transition px-2 py-1">Features</Link>
-                <Link href="/pricing" className="text-base text-indigo-600 font-medium px-2 py-1">Pricing</Link>
-                <Link href="/auth/login" className="text-base text-gray-600 hover:text-indigo-600 transition px-2 py-1">Sign In</Link>
-                <Link href="/auth/sign-up" className="bg-indigo-600 text-white px-5 py-3 rounded-lg hover:bg-indigo-700 transition text-base font-medium text-center mx-2">Get Started</Link>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-16 pb-24 px-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 overflow-hidden">
-        <div className="absolute inset-0">
-          <motion.div
-            className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-indigo-200 to-purple-200 rounded-full opacity-20 blur-3xl"
-            animate={{ 
-              scale: [1, 1.2, 1], 
-              opacity: [0.2, 0.3, 0.2],
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-200 to-pink-200 rounded-full opacity-20 blur-3xl"
-            animate={{ 
-              scale: [1, 1.15, 1], 
-              opacity: [0.2, 0.25, 0.2],
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        </div>
-        
+      <section className="relative max-sm:pt-20 max-sm:pt-28 pt-16 pb-24 px-6 bg-gradient-to-br from-[#E2FEE4] via-white to-green-50 overflow-hidden">
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <ScrollAnimatedDiv>
-            <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full text-sm text-gray-700 mb-8 font-medium border border-white/20">
-              <Star className="w-5 h-5 text-yellow-500" />
-              Simple, transparent pricing
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-              Choose the Perfect Plan for <span className="text-indigo-600">Your Store</span>
-            </h1>
-            <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Start with our free plan and upgrade as you grow. All plans include unlimited products and essential e-commerce features.
-            </p>
-          </ScrollAnimatedDiv>
+         
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+            Choose the Perfect Plan for <span className="text-[#037834]">Your Store</span>
+          </h1>
+          <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Start with our free plan and upgrade as you grow. All plans include unlimited products and essential e-commerce features.
+          </p>
         </div>
       </section>
 
       {/* Features Bar */}
       <section className="py-12 px-6 bg-white border-b border-gray-100">
         <div className="max-w-6xl mx-auto">
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6"
-          >
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {features.map((feature, index) => (
-              <motion.div key={index} variants={scaleIn} className="text-center">
-                <div className="bg-indigo-100 text-indigo-600 rounded-lg p-3 w-fit mx-auto mb-3">
+              <div key={index} className="text-center">
+                <div className="bg-[#E2FEE4] text-[#037834] rounded-lg p-3 w-fit mx-auto mb-3">
                   {feature.icon}
                 </div>
                 <h3 className="font-semibold text-gray-900 text-sm mb-1">{feature.title}</h3>
                 <p className="text-xs text-gray-600">{feature.description}</p>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Pricing Section */}
       <section className="py-20 px-6 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <ScrollAnimatedDiv className="text-center mb-16">
+          <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Pricing Built for Growth</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-8">
               Choose the plan that suits your business. Free plan stores are private for testing; paid plans are public and live.
             </p>
             
-            {/* Billing Toggle */}
             <div className="flex justify-center mb-8">
               <div className="bg-white rounded-lg p-1 flex items-center border border-gray-200 shadow-sm">
                 <button
-                  className={`px-6 py-3 rounded-md text-sm font-medium transition ${!isAnnual ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`px-6 py-3 rounded-md text-sm font-medium transition ${!isAnnual ? 'bg-[#037834] text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
                   onClick={() => setIsAnnual(false)}
                 >
                   Monthly
                 </button>
                 <button
-                  className={`px-6 py-3 rounded-md text-sm font-medium transition relative ${isAnnual ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`px-6 py-3 rounded-md text-sm font-medium transition relative ${isAnnual ? 'bg-[#037834] text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
                   onClick={() => setIsAnnual(true)}
                 >
                   Yearly
-                  <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                  <span className="absolute -top-2 -right-2 bg-[#03E525] text-[#037834] text-xs px-2 py-1 rounded-full font-bold">
                     5% Off
                   </span>
                 </button>
               </div>
             </div>
-          </ScrollAnimatedDiv>
+          </div>
 
-          {/* Pricing Cards */}
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             {pricingPlans.map((plan, index) => {
               const colorClasses = getColorClasses(plan.color, plan.popular);
               
               return (
-                <motion.div
+                <div
                   key={index}
-                  variants={fadeInUp}
                   className={`relative bg-white p-8 rounded-xl border transition-all duration-300 flex flex-col ${colorClasses.border} ${plan.popular ? 'transform md:scale-105' : 'hover:shadow-md'}`}
                 >
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                      <span className="bg-[#037834] text-white px-4 py-2 rounded-full text-sm font-semibold">
                         Most Popular
                       </span>
                     </div>
@@ -396,7 +359,7 @@ export default function PricingPage(): JSX.Element {
                     </div>
                     <div className="text-sm text-gray-600 mt-2">{plan.period}</div>
                     {isAnnual && plan.originalPrice && (
-                      <div className="text-sm text-green-600 font-medium mt-1">
+                      <div className="text-sm text-[#037834] font-medium mt-1">
                         Save ₦{parseInt(plan.originalPrice.replace('₦', '').replace(',', '')) - parseInt(plan.price.replace('₦', '').replace(',', ''))} per year
                       </div>
                     )}
@@ -412,7 +375,7 @@ export default function PricingPage(): JSX.Element {
                           </>
                         ) : (
                           <>
-                            <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                            <Check className="w-5 h-5 text-[#03E525] flex-shrink-0 mt-0.5" />
                             <span>{typeof feature === 'string' ? feature : feature.text}</span>
                           </>
                         )}
@@ -420,53 +383,35 @@ export default function PricingPage(): JSX.Element {
                     ))}
                   </ul>
                   
-                  {plan.disabled ? (
-                    <button
-                      className={`w-full py-4 rounded-lg font-medium transition text-base ${colorClasses.button}`}
-                      disabled={plan.disabled}
-                    >
-                      {plan.cta}
-                    </button>
-                  ) : (
-                    <Link href="/auth/sign-up">
-                      <button className={`w-full py-4 rounded-lg font-medium transition text-base ${colorClasses.button}`}>
-                        {plan.cta}
-                      </button>
-                    </Link>
-                  )}
-                </motion.div>
+                  <button
+                    className={`w-full py-4 rounded-lg font-medium transition text-base ${colorClasses.button}`}
+                    disabled={plan.disabled}
+                  >
+                    {plan.cta}
+                  </button>
+                </div>
               );
             })}
-          </motion.div>
+          </div>
 
-          <ScrollAnimatedDiv className="text-center">
+          <div className="text-center">
             <p className="text-gray-600 mb-4">All plans include secure hosting, SSL certificates, and mobile-responsive designs.</p>
-            <p className="text-sm text-gray-500">Need something custom? <Link href="/contact" className="text-indigo-600 hover:text-indigo-700 font-medium">Contact our sales team</Link></p>
-          </ScrollAnimatedDiv>
+            <p className="text-sm text-gray-500">Need something custom? <a href="/contact" className="text-[#037834] hover:text-[#03E525] font-medium">Contact our sales team</a></p>
+          </div>
         </div>
       </section>
 
       {/* FAQ Section */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-4xl mx-auto">
-          <ScrollAnimatedDiv className="text-center mb-16">
+          <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
             <p className="text-lg text-gray-600">Everything you need to know about our pricing and plans.</p>
-          </ScrollAnimatedDiv>
+          </div>
           
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="space-y-4"
-          >
+          <div className="space-y-4">
             {faqs.map((faq, index) => (
-              <motion.div
-                key={index}
-                variants={fadeInUp}
-                className="border border-gray-200 rounded-lg"
-              >
+              <div key={index} className="border border-gray-200 rounded-lg">
                 <button
                   onClick={() => toggleFAQ(index)}
                   className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition"
@@ -475,74 +420,34 @@ export default function PricingPage(): JSX.Element {
                   <HelpCircle className={`w-5 h-5 text-gray-500 transition-transform ${showFAQ[index] ? 'rotate-180' : ''}`} />
                 </button>
                 {showFAQ[index] && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="px-6 pb-4"
-                  >
+                  <div className="px-6 pb-4">
                     <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
-                  </motion.div>
+                  </div>
                 )}
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-gradient-to-r from-indigo-600 to-purple-700 text-white">
+      <section className="py-20 px-6 bg-gradient-to-r from-[#037834] to-[#03E525] text-white">
         <div className="max-w-4xl mx-auto text-center">
-          <ScrollAnimatedDiv>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to Start Building?</h2>
-            <p className="text-lg text-indigo-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of entrepreneurs who've built successful online stores with Zeevo. Start free, no credit card required.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/sign-up">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-white text-indigo-600 px-8 py-4 rounded-lg hover:bg-indigo-50 transition font-medium inline-flex items-center gap-3 text-lg shadow-lg"
-                >
-                  Start Free Today
-                  <ArrowRight className="w-5 h-5" />
-                </motion.button>
-              </Link>
-           
-            </div>
-          </ScrollAnimatedDiv>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to Start Building?</h2>
+          <p className="text-lg text-green-100 mb-8 max-w-2xl mx-auto">
+            Join thousands of entrepreneurs who've built successful online stores with Zeevo. Start free, no credit card required.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button className="bg-white text-[#037834] px-8 py-4 rounded-lg hover:bg-green-50 transition font-medium inline-flex items-center justify-center gap-3 text-lg shadow-lg">
+              Start Free Today
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Basic Footer */}
-      <ScrollAnimatedDiv>
-        <footer className="py-12 px-6 bg-gray-900 text-gray-300">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              {/* Logo/Brand */}
-              <div className="flex items-center gap-2">
-                <div className="text-xl font-bold text-white">Zeevo</div>
-                <span className="text-gray-500">•</span>
-                <span className="text-sm">Build your online store</span>
-              </div>
-
-              {/* Quick Links */}
-              <div className="flex items-center gap-6 text-sm">
-                <Link href="/help" className="hover:text-white transition">Help</Link>
-                <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
-                <Link href="/terms" className="hover:text-white transition">Terms</Link>
-                <Link href="/contact" className="hover:text-white transition">Contact</Link>
-              </div>
-
-              {/* Copyright */}
-              <div className="text-sm text-gray-500">
-                © {new Date().getFullYear()} Zeevo. All rights reserved.
-              </div>
-            </div>
-          </div>
-        </footer>
-      </ScrollAnimatedDiv>
+      {/* Footer */}
+     <Footer/>
     </main>
   );
 }
