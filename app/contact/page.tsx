@@ -2,6 +2,7 @@
 
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { ArrowLeft, Mail, MessageSquare, User, Send, CheckCircle, AlertCircle, Calendar } from 'lucide-react';
+import Navbar from '@/components/landing/navbar';
 
 interface FormData {
   name: string;
@@ -79,36 +80,17 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-[#E2FEE4] via-white to-[#E2FEE4]">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={handleGoBack}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
-            >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" />
-              <span className="text-sm sm:text-base font-medium">Back</span>
-            </button>
-            <div className="flex-1 text-center sm:text-right ml-4">
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Contact Us</h1>
-              <div className="hidden sm:flex sm:items-center sm:justify-end gap-2 text-sm text-gray-500 mt-1">
-                <MessageSquare className="w-4 h-4" />
-                <span>We're here to help</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar/>
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         {/* Introduction */}
-        <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 sm:p-8 mb-8 border border-gray-200/50 shadow-sm">
+        <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 sm:p-8 mb-8 border border-[#E2FEE4]/50 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-            <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0 self-start">
-              <Mail className="w-6 h-6 text-indigo-600" />
+            <div className="w-12 h-12 bg-[#E2FEE4] rounded-full flex items-center justify-center flex-shrink-0 self-start">
+              <Mail className="w-6 h-6 text-[#03E525]" />
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-semibold text-gray-900 mb-3">Get in Touch</h2>
@@ -116,14 +98,14 @@ export default function Contact() {
                 For quick support or inquiries, please email us directly at{' '}
                 <a
                   href="mailto:support@zeevo.com"
-                  className="text-indigo-600 hover:text-indigo-700 underline font-medium"
+                  className="text-[#03E525] hover:text-[#02CE21] underline font-medium"
                 >
-                  support@zeevo.com
+                  support@zeevo.shop
                 </a>
               </p>
               <button
                 onClick={() => setShowForm(!showForm)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#03E525] text-white rounded-lg hover:bg-[#02CE21] transition-colors font-medium shadow-md hover:shadow-lg"
               >
                 <MessageSquare className="w-4 h-4" />
                 {showForm ? 'Hide Contact Form' : 'Or send us a message'}
@@ -134,29 +116,32 @@ export default function Contact() {
 
         {/* Success Message */}
         {success && (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-[#E2FEE4] border border-[#03E525]/20 rounded-xl p-4 mb-6 flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-[#03E525] flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-green-800 font-medium">Message sent successfully!</p>
-              <p className="text-green-700 text-sm mt-1">Thanks for reaching out! We'll get back to you soon.</p>
+              <p className="text-[#03E525]/90 font-medium">Message sent successfully!</p>
+              <p className="text-[#03E525]/70 text-sm mt-1">Thanks for reaching out! We'll get back to you soon.</p>
             </div>
           </div>
         )}
 
         {/* Contact Form */}
         {showForm && (
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 sm:p-8 border border-gray-200/50 shadow-sm">
+          <form onSubmit={handleSubmit} className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 sm:p-8 border border-[#E2FEE4]/50 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-indigo-600" />
+              <div className="w-10 h-10 bg-[#E2FEE4] rounded-lg flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-[#03E525]" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Send us a message</h3>
-                <p className="text-sm text-gray-600">We'll respond within 24 hours</p>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Calendar className="w-4 h-4" />
+                  We'll respond within 24 hours
+                </div>
               </div>
             </div>
 
-            <div onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-6">
               {/* Name Field */}
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-900 mb-2">
@@ -172,7 +157,7 @@ export default function Contact() {
                   className={`w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 ${
                     errors.name 
                       ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                      : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'
+                      : 'border-[#E2FEE4]/50 focus:ring-[#03E525] focus:border-[#03E525]'
                   }`}
                   placeholder="Enter your full name"
                 />
@@ -199,7 +184,7 @@ export default function Contact() {
                   className={`w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 ${
                     errors.email 
                       ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                      : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'
+                      : 'border-[#E2FEE4]/50 focus:ring-[#03E525] focus:border-[#03E525]'
                   }`}
                   placeholder="Enter your email address"
                 />
@@ -212,7 +197,7 @@ export default function Contact() {
               </div>
 
               {/* Message Field */}
-              <div className='text-black'>
+              <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-900 mb-2">
                   <MessageSquare className="w-4 h-4 inline mr-2" />
                   Message
@@ -226,7 +211,7 @@ export default function Contact() {
                   className={`w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 resize-none ${
                     errors.message 
                       ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                      : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'
+                      : 'border-[#E2FEE4]/50 focus:ring-[#03E525] focus:border-[#03E525]'
                   }`}
                   placeholder="Tell us how we can help you..."
                 />
@@ -242,10 +227,10 @@ export default function Contact() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg font-medium transition-colors ${
+                className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg ${
                   isSubmitting
                     ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-indigo-600 hover:bg-indigo-700'
+                    : 'bg-[#03E525] hover:bg-[#02CE21]'
                 } text-white`}
               >
                 {isSubmitting ? (
@@ -261,11 +246,11 @@ export default function Contact() {
                 )}
               </button>
             </div>
-          </div>
+          </form>
         )}
 
         {/* Footer */}
-        <div className="text-center mt-12 py-8 border-t border-gray-200/50">
+        <div className="text-center mt-12 py-8 border-t border-[#E2FEE4]/50">
           <p className="text-sm text-gray-500">
             © 2025 Zeevo. We typically respond to messages within 24 hours.
           </p>
