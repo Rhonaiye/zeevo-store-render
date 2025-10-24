@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import Cookies from "js-cookie";
-import {  X, Send, Mail, MessageSquareText } from "lucide-react";
+import { X, Send, Mail, MessageSquareText, Paperclip } from "lucide-react";
 
 interface Message {
   _id: string;
@@ -11,7 +11,7 @@ interface Message {
   timestamp: string;
 }
 
-const socket: Socket = io("https://zeevo-backend-production.up.railway.app");
+const socket: Socket = io(process.env.NEXT_PUBLIC_API_BASE_URL);
 
 const formatTime = (timestamp: string) => {
   const date = new Date(timestamp);
@@ -24,18 +24,42 @@ const formatTime = (timestamp: string) => {
   return date.toLocaleDateString();
 };
 
+const getLinkText = (url: string): string => {
+  try {
+    const u = new URL(url);
+    const filename = u.pathname.split('/').pop();
+    if (filename && filename !== '') {
+      return decodeURIComponent(filename);
+    } else {
+      return u.hostname;
+    }
+  } catch {
+    return url;
+  }
+};
+
+const isImageUrl = (url: string): boolean => {
+  try {
+    return /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(new URL(url).pathname.toLowerCase());
+  } catch {
+    return false;
+  }
+};
+
 const CustomerCareChat: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState(Cookies.get("chat_email") || "");
   const [conversationId, setConversationId] = useState<string | null>(Cookies.get("chat_conversationId") || null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [typing, setTyping] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [windowWidth, setWindowWidth] = useState<number>(typeof window !== "undefined" ? window.innerWidth : 1024);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const openRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchMessages = async (convId: string) => {
     try {
@@ -46,6 +70,43 @@ const CustomerCareChat: React.FC = () => {
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    if (!conversationId) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const timestamp = new Date().toISOString();
+    const fileMsgId = Date.now().toString() + Math.random();
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/upload/cloudfare`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
+
+      const data = await res.json();
+      if (data.fileurl) {
+        // Optimistically add file message
+        const fileMsg: Message = {
+          _id: fileMsgId,
+          sender: "user",
+          content: data.fileurl,
+          timestamp: timestamp,
+        };
+        setMessages(prev => [...prev, fileMsg]);
+
+        // Emit file message
+        socket.emit("send_message", { conversationId, ...fileMsg });
+      }
+    } catch (err) {
+      console.error('File upload error:', err);
+      // Optionally remove optimistic messages or show error
     }
   };
 
@@ -67,12 +128,15 @@ const CustomerCareChat: React.FC = () => {
 
   useEffect(() => {
     const handleReceiveMessage = (msg: Message) => {
-      setMessages(prev => {
-        if (prev.some(m => m._id === msg._id)) return prev;
-        return [...prev, msg];
-      });
-      if (!openRef.current && msg.sender === "admin") {
-        setUnreadCount(prev => prev + 1);
+      // Only add admin messages to avoid duplicates from server echo of user messages
+      if (msg.sender === "admin") {
+        setMessages(prev => {
+          if (prev.some(m => m._id === msg._id)) return prev;
+          return [...prev, msg];
+        });
+        if (!openRef.current) {
+          setUnreadCount(prev => prev + 1);
+        }
       }
     };
 
@@ -99,7 +163,7 @@ const CustomerCareChat: React.FC = () => {
       socket.off("conversation_created", handleConversationCreated);
       socket.off("typing", handleTyping);
     };
-  }, []); // Removed [open] dependency to avoid stale closures
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -113,39 +177,70 @@ const CustomerCareChat: React.FC = () => {
   }, [conversationId, email]);
 
   const joinConversation = () => {
-    if (!email.trim() || isJoining) return;
-    if (!email.trim()) return alert("Enter your email to start chat");
+    if (isJoining) return;
+    if (!email.trim()) {
+      alert("Enter your email to start chat");
+      return;
+    }
     setIsJoining(true);
     Cookies.set("chat_email", email);
     socket.emit("join_conversation", { conversationId, email });
   };
 
   const sendMessage = () => {
-    if (!input.trim() || !conversationId) return;
+    if (!conversationId) return;
 
-    const msg: Message = {
-      _id: Date.now().toString(),
-      sender: "user",
-      content: input,
-      timestamp: new Date().toISOString(),
-    };
+    const timestamp = new Date().toISOString();
 
-    socket.emit("send_message", { conversationId, ...msg });
-    setInput("");
+    if (selectedFile) {
+      // Upload and add file message
+      handleFileUpload(selectedFile);
+
+      setSelectedFile(null);
+    }
+
+    if (input.trim()) {
+      // Handle text message
+      const msg: Message = {
+        _id: Date.now().toString(),
+        sender: "user",
+        content: input,
+        timestamp: timestamp,
+      };
+
+      // Optimistically add user message
+      setMessages(prev => [...prev, msg]);
+
+      // Emit to server
+      socket.emit("send_message", { conversationId, ...msg });
+      setInput("");
+    }
   };
 
   const endConversation = () => {
     setConversationId(null);
     setMessages([]);
     setUnreadCount(0);
+    setSelectedFile(null);
     Cookies.remove("chat_conversationId");
     Cookies.remove("chat_email");
   };
 
-  const isMobile = windowWidth <= 768;
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        alert(`File size too large. Maximum size allowed is 5MB.`);
+        e.target.value = '';
+        return;
+      }
+      setSelectedFile(file);
+      e.target.value = '';
+    }
+  };
 
-  // WhatsApp pattern background
-  const whatsappPattern = `data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='pattern' x='0' y='0' width='60' height='60' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='15' cy='15' r='0.8' fill='%23d9d9d9' opacity='0.4'/%3E%3Ccircle cx='45' cy='45' r='0.8' fill='%23d9d9d9' opacity='0.4'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='60' height='60' fill='url(%23pattern)'/%3E%3C/svg%3E`;
+  const isMobile = windowWidth <= 768;
 
   const buttonTitle = !conversationId 
     ? "Contact Customer Support" 
@@ -158,61 +253,24 @@ const CustomerCareChat: React.FC = () => {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
+        @keyframes bounce {
+          0%, 80%, 100% { transform: scale(0); }
+          40% { transform: scale(1); }
+        }
       `}</style>
 
       {!open && (
-        <div style={{ position: "relative", display: "inline-block" }}>
+        <div className="relative inline-block">
           <button
             onClick={() => setOpen(true)}
             title={buttonTitle}
-            style={{
-              position: "fixed",
-              bottom: isMobile ? 16 : 24,
-              right: isMobile ? 16 : 24,
-              width: isMobile ? 52 : 60,
-              height: isMobile ? 52 : 60,
-              borderRadius: "50%",
-              backgroundColor: "#25D366",
-              color: "#fff",
-              border: "none",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              boxShadow: "0 4px 16px rgba(37, 211, 102, 0.4)",
-              zIndex: 9999,
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.05)";
-              e.currentTarget.style.boxShadow = "0 6px 20px rgba(37, 211, 102, 0.5)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.boxShadow = "0 4px 16px rgba(37, 211, 102, 0.4)";
-            }}
+            className={`fixed bottom-4 right-4 w-12 h-12 rounded-full bg-green-500 text-white border-none flex items-center justify-center cursor-pointer shadow-lg z-[9999] transition-all duration-200 hover:scale-105 hover:shadow-xl sm:bottom-6 sm:right-6 sm:w-14 sm:h-14`}
           >
             <MessageSquareText size={isMobile ? 20 : 24} />
           </button>
           {unreadCount > 0 && (
             <div
-              style={{
-                position: "absolute",
-                top: isMobile ? 4 : 8,
-                right: isMobile ? 4 : 8,
-                backgroundColor: "#ff4444",
-                color: "#fff",
-                borderRadius: "50%",
-                width: isMobile ? 18 : 20,
-                height: isMobile ? 18 : 20,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: isMobile ? 10 : 12,
-                fontWeight: "bold",
-                minWidth: 18,
-                zIndex: 10000,
-              }}
+              className={`absolute bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold min-w-[18px] z-[10000] sm:w-5 sm:h-5 sm:text-sm top-1 right-1 sm:top-2 sm:right-2`}
             >
               {unreadCount > 99 ? "99+" : unreadCount}
             </div>
@@ -221,359 +279,189 @@ const CustomerCareChat: React.FC = () => {
       )}
 
       {open && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: isMobile ? 0 : 24,
-            right: isMobile ? 0 : 24,
-            left: isMobile ? 0 : "auto",
-            width: isMobile ? "100vw" : "380px",
-            height: isMobile ? "80vh" : "600px",
-            borderRadius: isMobile ? 0 : 16,
-            backgroundColor: "#fff",
-            boxShadow: isMobile ? "none" : "0 20px 60px rgba(0, 0, 0, 0.15)",
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-            zIndex: 9999,
-          }}
-        >
-          {/* Header */}
-          <div style={{
-            padding: isMobile ? "14px 16px" : "16px 20px",
-            backgroundColor: "#075E54",
-            color: "#fff",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            fontWeight: 500,
-            fontSize: isMobile ? "14px" : "16px",
-          }}>
-            <span>Customer Care</span>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {conversationId && (
-                <button
-                  onClick={endConversation}
-                  style={{
-                    background: "rgba(255,255,255,0.15)",
-                    border: "1px solid rgba(255,255,255,0.25)",
-                    color: "#fff",
-                    padding: isMobile ? "5px 10px" : "6px 12px",
-                    borderRadius: 16,
-                    cursor: "pointer",
-                    fontSize: isMobile ? "12px" : "13px",
-                    fontWeight: 500,
-                    transition: "background 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(255,255,255,0.25)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "rgba(255,255,255,0.15)";
-                  }}
-                >
-                  End Chat
-                </button>
-              )}
-              <button 
-                onClick={() => setOpen(false)} 
-                style={{ 
-                  background: "transparent", 
-                  border: "none", 
-                  color: "#fff", 
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 4,
-                }}
-              >
-                <X size={isMobile ? 18 : 20} />
-              </button>
-            </div>
-          </div>
-
-          {/* Chat Body */}
-          <div style={{ 
-            flex: 1, 
-            overflowY: "auto", 
-            padding: isMobile ? "16px 12px" : "20px 16px", 
-            backgroundColor: "#E5DDD5",
-            backgroundImage: `url("${whatsappPattern}")`,
-            backgroundRepeat: "repeat",
-          }}>
-            {!conversationId ? (
-              <div style={{ textAlign: "center", padding: isMobile ? "30px 0" : "40px 0" }}>
-                <div style={{ 
-                  marginBottom: isMobile ? 16 : 20, 
-                  color: "#303030", 
-                  fontSize: isMobile ? "16px" : "18px", 
-                  fontWeight: 600 
-                }}>
-                  Welcome! Let's chat.
-                </div>
-                <div style={{ 
-                  marginBottom: isMobile ? 20 : 24, 
-                  color: "#667781", 
-                  fontSize: isMobile ? "13px" : "14px",
-                  lineHeight: 1.5,
-                }}>
-                  Enter your email to get personalized support.
-                </div>
-                <div style={{ 
-                  display: "flex", 
-                  alignItems: "center", 
-                  marginBottom: isMobile ? 16 : 20, 
-                  backgroundColor: "#fff", 
-                  border: "1px solid #D1D7DB", 
-                  borderRadius: 8, 
-                  padding: isMobile ? "10px 14px" : "12px 16px" 
-                }}>
-                  <Mail size={isMobile ? 16 : 18} style={{ marginRight: 10, color: "#8696A0", flexShrink: 0 }} />
-                  <input
-                    placeholder="your.email@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={{ 
-                      flex: 1, 
-                      border: "none", 
-                      outline: "none", 
-                      background: "transparent", 
-                      fontSize: isMobile ? "15px" : "15px", 
-                      color: "#303030" 
-                    }}
-                  />
-                </div>
+        <>
+          {isMobile && (
+            <div 
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]" 
+              onClick={() => setOpen(false)}
+            />
+          )}
+          <div
+            className={`fixed bottom-0 right-0 left-0 w-full ${isMobile ? 'h-[70vh] rounded-t-xl' : 'h-screen rounded-none'} bg-white shadow-none flex flex-col overflow-hidden z-[9999] sm:bottom-6 sm:right-6 sm:left-auto sm:w-[380px] sm:h-[600px] sm:rounded-xl sm:shadow-2xl`}
+          >
+            {/* Header */}
+            <div className={`px-4 py-3 bg-green-800 text-white flex justify-between items-center font-medium text-sm sm:text-base sm:px-5 sm:py-4`}>
+              <span>Customer Care</span>
+              <div className="flex gap-2 items-center">
+                {conversationId && (
+                  <button
+                    onClick={endConversation}
+                    className={`bg-white/15 border border-white/25 text-white px-2.5 py-1.5 rounded-xl cursor-pointer text-xs font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm hover:bg-white/25`}
+                  >
+                    End Chat
+                  </button>
+                )}
                 <button 
-                  onClick={joinConversation} 
-                  disabled={!email.trim() || isJoining} 
-                  style={{
-                    width: "100%", 
-                    padding: isMobile ? "11px 20px" : "12px 24px",
-                    backgroundColor: (email.trim() && !isJoining) ? "#25D366" : "#A9B3BA",
-                    color: "#fff", 
-                    border: "none", 
-                    borderRadius: 8, 
-                    fontSize: isMobile ? "14px" : "15px", 
-                    fontWeight: 600,
-                    cursor: (email.trim() && !isJoining) ? "pointer" : "not-allowed",
-                    transition: "background 0.2s ease",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (email.trim() && !isJoining) e.currentTarget.style.backgroundColor = "#20BD5F";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (email.trim() && !isJoining) e.currentTarget.style.backgroundColor = "#25D366";
-                  }}
+                  onClick={() => setOpen(false)} 
+                  className={`bg-transparent border-none text-white cursor-pointer flex items-center justify-center p-1`}
                 >
-                  {isJoining ? (
-                    <>
-                      <div style={{
-                        width: 16,
-                        height: 16,
-                        border: "2px solid rgba(255,255,255,0.3)",
-                        borderTop: "2px solid #fff",
-                        borderRadius: "50%",
-                        animation: "spin 0.8s linear infinite",
-                      }} />
-                      <span>Joining...</span>
-                    </>
-                  ) : (
-                    "Start Chat"
-                  )}
+                  <X size={isMobile ? 18 : 20} />
                 </button>
               </div>
-            ) : (
-              <>
-                {messages.length === 0 && (
-                  <div style={{ 
-                    textAlign: "center", 
-                    color: "#667781", 
-                    fontSize: isMobile ? "13px" : "14px", 
-                    padding: isMobile ? "30px 0" : "40px 0" 
-                  }}>
-                    Say hello to start the conversation!
-                  </div>
-                )}
+            </div>
 
-                {messages.every(msg => msg.sender !== "admin") && messages.length > 0 && (
-                  <div style={{ 
-                    textAlign: "center", 
-                    color: "#8696A0", 
-                    fontSize: isMobile ? "12px" : "13px", 
-                    paddingBottom: 12,
-                    lineHeight: 1.4,
-                  }}>
-                    Admin will connect with you within 5 minutes
+            {/* Chat Body */}
+            <div className={`flex-1 overflow-y-auto p-4 bg-[#E5DDD5] sm:p-5`}>
+              {!conversationId ? (
+                <div className="text-center py-8 sm:py-10">
+                  <div className={`mb-4 text-gray-800 font-semibold text-lg sm:text-xl`}>
+                    Welcome! Let's chat.
                   </div>
-                )}
-
-                {messages.map(msg => (
-                  <div 
-                    key={msg._id} 
-                    style={{ 
-                      display: "flex", 
-                      justifyContent: msg.sender === "user" ? "flex-end" : "flex-start", 
-                      marginBottom: isMobile ? 8 : 10 
-                    }}
+                  <div className={`mb-5 text-gray-600 text-sm sm:text-base leading-relaxed`}>
+                    Enter your email to get personalized support.
+                  </div>
+                  <div className={`flex items-center mb-4 bg-white border border-gray-300 rounded-lg p-3 sm:p-4`}>
+                    <Mail size={isMobile ? 16 : 18} className="mr-2.5 text-gray-500 flex-shrink-0" />
+                    <input
+                      placeholder="your.email@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={`flex-1 border-none outline-none bg-transparent text-base text-gray-800`}
+                    />
+                  </div>
+                  <button 
+                    onClick={joinConversation} 
+                    disabled={!email.trim() || isJoining} 
+                    className={`w-full py-3 px-5 bg-green-500 text-white border-none rounded-lg text-base font-semibold cursor-pointer transition-colors flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-600 sm:py-3 sm:px-6 sm:text-lg`}
                   >
-                    <div style={{
-                      position: "relative",
-                      maxWidth: isMobile ? "80%" : "75%",
-                      padding: isMobile ? "8px 12px" : "10px 14px",
-                      borderRadius: 8,
-                      background: msg.sender === "user" ? "#D9FDD3" : "#fff",
-                      color: "#303030",
-                      boxShadow: "0 1px 0.5px rgba(0,0,0,0.13)",
-                      fontSize: isMobile ? "13px" : "14px",
-                      lineHeight: 1.5,
-                    }}>
-                      {/* WhatsApp tail */}
-                      <div style={{
-                        position: "absolute",
-                        top: 0,
-                        [msg.sender === "user" ? "right" : "left"]: -8,
-                        width: 0,
-                        height: 0,
-                        borderStyle: "solid",
-                        borderWidth: msg.sender === "user" ? "0 0 13px 8px" : "0 8px 13px 0",
-                        borderColor: msg.sender === "user" 
-                          ? `transparent transparent transparent ${msg.sender === "user" ? "#D9FDD3" : "#fff"}`
-                          : `transparent ${msg.sender === "user" ? "#D9FDD3" : "#fff"} transparent transparent`,
-                      }} />
-                      
-                      <div style={{ paddingRight: 50 }}>
-                        {msg.content}
-                      </div>
-                      <div style={{ 
-                        position: "absolute",
-                        bottom: 6,
-                        right: 10,
-                        fontSize: isMobile ? "10px" : "11px", 
-                        color: "#667781",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 2,
-                      }}>
-                        {formatTime(msg.timestamp)}
-                      </div>
+                    {isJoining ? (
+                      <>
+                        <div className={`w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin`} />
+                        <span>Joining...</span>
+                      </>
+                    ) : (
+                      "Start Chat"
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {messages.length === 0 && (
+                    <div className={`text-center text-gray-600 text-sm sm:text-base py-8 sm:py-10`}>
+                      Say hello to start the conversation!
                     </div>
-                  </div>
-                ))}
+                  )}
 
-                {typing && (
-                  <div style={{ 
-                    display: "flex",
-                    justifyContent: "flex-start",
-                    marginBottom: 12,
-                  }}>
-                    <div style={{
-                      backgroundColor: "#fff",
-                      padding: "10px 14px",
-                      borderRadius: 8,
-                      boxShadow: "0 1px 0.5px rgba(0,0,0,0.13)",
-                      display: "flex",
-                      gap: 4,
-                    }}>
-                      <div style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        backgroundColor: "#8696A0",
-                        animation: "bounce 1.4s infinite ease-in-out both",
-                        animationDelay: "-0.32s",
-                      }} />
-                      <div style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        backgroundColor: "#8696A0",
-                        animation: "bounce 1.4s infinite ease-in-out both",
-                        animationDelay: "-0.16s",
-                      }} />
-                      <div style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        backgroundColor: "#8696A0",
-                        animation: "bounce 1.4s infinite ease-in-out both",
-                      }} />
+                  {messages.every(msg => msg.sender !== "admin") && messages.length > 0 && (
+                    <div className={`text-center text-gray-500 text-xs sm:text-sm pb-3 leading-relaxed`}>
+                      Admin will connect with you within 5 minutes
                     </div>
+                  )}
+
+                  {messages.map(msg => {
+                    const isUser = msg.sender === "user";
+                    const tailColor = isUser ? "#dcfce7" : "#ffffff";
+                    const tailPosition = isUser ? "-left-2" : "-right-2";
+                    const tailBorders = isUser ? "border-r-2 border-b-3" : "border-l-2 border-b-3";
+                    const tailBorderColor = isUser 
+                      ? `transparent ${tailColor} transparent transparent`
+                      : `transparent transparent transparent ${tailColor}`;
+
+                    return (
+                      <div 
+                        key={msg._id} 
+                        className={`flex ${isUser ? "justify-end" : "justify-start"} mb-2 sm:mb-2.5`}
+                      >
+                        <div className={`relative max-w-[80%] sm:max-w-[75%] p-3 sm:p-3.5 rounded-lg ${isUser ? "bg-green-100" : "bg-white"} text-gray-800 shadow-sm text-sm sm:text-base flex flex-col`}>
+                          {/* WhatsApp tail */}
+                          <div 
+                            className={`absolute bottom-0 ${tailPosition} w-0 h-0 border-solid border-t-0 ${tailBorders} border-transparent`}
+                            style={{ borderColor: tailBorderColor }}
+                          />
+                          
+                          <div className={`mb-1 ${isUser ? "self-end" : "self-start"}`}>
+                            {msg.content.startsWith('http') ? (
+                              isImageUrl(msg.content) ? (
+                                <img 
+                                  src={msg.content} 
+                                  alt="Attached image" 
+                                  className={`max-w-full h-auto rounded-lg block`}
+                                />
+                              ) : (
+                                <a 
+                                  href={msg.content} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className={`text-green-500 no-underline break-words`}
+                                >
+                                  📎 {getLinkText(msg.content)}
+                                </a>
+                              )
+                            ) : (
+                              <div className="text-sm sm:text-base leading-6">{msg.content}</div>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-600 self-end mt-auto">
+                            {formatTime(msg.timestamp)}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {typing && (
+                    <div className={`flex justify-start mb-3`}>
+                      <div className={`bg-white p-2.5 sm:p-3.5 rounded-lg shadow-sm flex gap-1`}>
+                        <div className={`w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:-0.32s]`} />
+                        <div className={`w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:-0.16s]`} />
+                        <div className={`w-2 h-2 rounded-full bg-gray-500 animate-bounce`} />
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </>
+              )}
+            </div>
+
+            {/* Input */}
+            {conversationId && (
+              <div className={`p-2 sm:p-4 bg-gray-100`}>
+                <div className={`flex items-center gap-2 bg-white rounded-full p-2 sm:p-3`}>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                  <Paperclip 
+                    size={isMobile ? 16 : 18} 
+                    onClick={() => fileInputRef.current?.click()} 
+                    className={`cursor-pointer text-gray-500 flex-shrink-0 ${selectedFile ? "text-green-500" : ""}`} 
+                  />
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                    placeholder={selectedFile ? `Send "${selectedFile.name}"` : "Type a message"}
+                    className={`flex-1 py-2 px-0 border-none outline-none bg-transparent text-base text-gray-800`}
+                  />
+                  <button 
+                    onClick={sendMessage} 
+                    disabled={!input.trim() && !selectedFile} 
+                    className={`w-9 h-9 rounded-full border-none flex items-center justify-center cursor-pointer flex-shrink-0 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed ${ (input.trim() || selectedFile) ? "bg-green-500 hover:bg-green-600" : "bg-gray-300" }`}
+                  >
+                    <Send size={isMobile ? 16 : 18} className={(input.trim() || selectedFile) ? "text-white" : "text-gray-500"} />
+                  </button>
+                </div>
+                {selectedFile && (
+                  <div className={`px-3 py-1 text-xs text-gray-600 text-center`}>
+                    File selected: {selectedFile.name}
                   </div>
                 )}
-                <style>{`
-                  @keyframes bounce {
-                    0%, 80%, 100% { transform: scale(0); }
-                    40% { transform: scale(1); }
-                  }
-                `}</style>
-                <div ref={messagesEndRef} />
-              </>
+              </div>
             )}
           </div>
-
-          {/* Input */}
-          {conversationId && (
-            <div style={{ 
-              padding: isMobile ? "8px 12px 12px" : "10px 16px", 
-              backgroundColor: "#F0F2F5",
-            }}>
-              <div style={{ 
-                display: "flex", 
-                alignItems: "center", 
-                gap: 8, 
-                backgroundColor: "#fff", 
-                borderRadius: 24, 
-                padding: isMobile ? "6px 12px" : "8px 16px",
-              }}>
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                  placeholder="Type a message"
-                  style={{ 
-                    flex: 1, 
-                    padding: isMobile ? "7px 0" : "8px 0", 
-                    border: "none", 
-                    outline: "none", 
-                    backgroundColor: "transparent", 
-                    fontSize: isMobile ? "14px" : "15px", 
-                    color: "#303030" 
-                  }}
-                />
-                <button 
-                  onClick={sendMessage} 
-                  disabled={!input.trim()} 
-                  style={{
-                    width: isMobile ? 36 : 40, 
-                    height: isMobile ? 36 : 40, 
-                    borderRadius: "50%", 
-                    backgroundColor: input.trim() ? "#25D366" : "#D1D7DB", 
-                    border: "none", 
-                    display: "flex", 
-                    alignItems: "center", 
-                    justifyContent: "center", 
-                    cursor: input.trim() ? "pointer" : "not-allowed",
-                    flexShrink: 0,
-                    transition: "background 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (input.trim()) e.currentTarget.style.backgroundColor = "#20BD5F";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (input.trim()) e.currentTarget.style.backgroundColor = "#25D366";
-                  }}
-                >
-                  <Send size={isMobile ? 16 : 18} color={input.trim() ? "#fff" : "#8696A0"} />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        </>
       )}
     </div>
   );

@@ -1,28 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
 
-// Icons
-import {
-  ArrowRight,
-  Zap,
-  Palette,
-  Shield,
-  TrendingUp,
-  Users,
-  Globe,
-  Star,
-  Check,
-  Twitter,
-  Instagram,
-  Linkedin,
-  Menu,
-  X,
-  Ban,
-} from 'lucide-react';
 
 // Components
 import Navbar from '@/components/landing/navbar';
