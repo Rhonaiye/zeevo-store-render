@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 const  HeroSection = ()=> {
   return (
-   <section className="relative  max-sm:pt-8 pt-28  pb-24 px-6 xl:pt-26 bg-[#E2FEE4] overflow-hidden">
+   <section className="relative  max-sm:pt-20 pt-28  pb-24 px-6 xl:pt-26 bg-[#E2FEE4] overflow-hidden">
         <div className="absolute inset-0">
           <motion.div
             className="absolute top-20 left-10 w-96 h-96  rounded-full opacity-30 blur-3xl"
