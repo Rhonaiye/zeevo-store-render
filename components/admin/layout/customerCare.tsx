@@ -8,6 +8,9 @@ interface Conversation {
   _id: string;
   name: string;
   lastMessageAt: string;
+  status?: "open" | "ended";
+  endedBy?: "user" | "admin" | null;
+  endedAt?: string | null;
 }
 
 interface Message {
@@ -18,7 +21,7 @@ interface Message {
   timestamp: string;
 }
 
-const socket: Socket = io(process.env.NEXT_PUBLIC_API_BASE_URL); // replace with your server URL
+const socket: Socket = io(process.env.NEXT_PUBLIC_API_BASE_URL || ""); // replace with your server URL
 
 const AdminCustomerCare: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -31,6 +34,10 @@ const AdminCustomerCare: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [chatStatus, setChatStatus] = useState<"idle" | "open" | "ending" | "ended">("idle");
+  const [endedBy, setEndedBy] = useState<string | null>(null);
+  const [endedAt, setEndedAt] = useState<string | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -76,6 +83,7 @@ const AdminCustomerCare: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // socket event handlers
     const handleReceiveMessage = (msg: Message) => {
       if (msg.sender === "admin") return;
 
@@ -107,14 +115,67 @@ const AdminCustomerCare: React.FC = () => {
       });
     };
 
+    // New: handle chat ended or conversation updates
+    const handleChatEnded = (data: any) => {
+      // Accept multiple shapes:
+      // { conversation: {...} } OR { conversationId, endedBy, endedAt }
+      let convPayload: Partial<Conversation> | null = null;
+      if (data?.conversation) convPayload = data.conversation;
+      else if (data?.conversationId) convPayload = {
+        _id: data.conversationId,
+        status: "ended",
+        endedBy: data.endedBy,
+        endedAt: data.endedAt,
+      };
+
+      if (!convPayload) return;
+
+      // Update conversations list
+      setConversations(prev => prev.map(c => c._id === convPayload!._id ? { ...c, ...convPayload } as Conversation : c));
+
+      // If the ended convo is currently active, update local UI
+      if (activeConvo && convPayload._id === activeConvo._id) {
+        setChatStatus("ended");
+        setEndedBy((convPayload as any).endedBy ?? null);
+        setEndedAt((convPayload as any).endedAt ? new Date((convPayload as any).endedAt).toISOString() : new Date().toISOString());
+      }
+    };
+
+    const handleConversationUpdated = (conv: Conversation) => {
+      if (!conv) return;
+      // Update conversation list
+      setConversations(prev => {
+        const found = prev.find(c => c._id === conv._id);
+        if (found) {
+          return prev.map(c => c._id === conv._id ? conv : c);
+        }
+        // if not found, add it
+        return [conv, ...prev];
+      });
+
+      // If active, update activeConvo and possibly chat status
+      if (activeConvo && conv._id === activeConvo._id) {
+        setActiveConvo(conv);
+        if (conv.status === "ended") {
+          setChatStatus("ended");
+          setEndedBy(conv.endedBy ?? null);
+          setEndedAt(conv.endedAt ?? null);
+        }
+      }
+    };
+
     socket.on("receive_message", handleReceiveMessage);
     socket.on("typing", handleTyping);
     socket.on("new_conversation", handleNewConversation);
+    socket.on("chat_ended", handleChatEnded);
+    socket.on("conversation_updated", handleConversationUpdated);
 
     return () => {
       socket.off("receive_message", handleReceiveMessage);
       socket.off("typing", handleTyping);
       socket.off("new_conversation", handleNewConversation);
+      socket.off("chat_ended", handleChatEnded);
+      socket.off("conversation_updated", handleConversationUpdated);
     };
   }, [activeConvo]);
 
@@ -133,6 +194,7 @@ const AdminCustomerCare: React.FC = () => {
   const openConversation = async (convo: Conversation) => {
     setActiveConvo(convo);
     setSidebarOpen(false);
+    // admin name can be whatever; server expects email field but it's fine
     socket.emit("join_conversation", { conversationId: convo._id, name: "admin" });
 
     // Clear unread badge
@@ -145,9 +207,20 @@ const AdminCustomerCare: React.FC = () => {
     try {
       const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/conversations/${convo._id}/messages`);
       setMessages(res.data);
+      // set chat status based on convo.status
+      if (convo.status === "ended") {
+        setChatStatus("ended");
+        setEndedBy(convo.endedBy ?? null);
+        setEndedAt(convo.endedAt ?? null);
+      } else {
+        setChatStatus("open");
+        setEndedBy(null);
+        setEndedAt(null);
+      }
       scrollToBottom();
     } catch {
       setMessages([]);
+      setChatStatus("open");
     }
   };
 
@@ -167,6 +240,7 @@ const AdminCustomerCare: React.FC = () => {
 
   const sendMessage = async () => {
     if (!activeConvo) return;
+    if (chatStatus !== "open") return; // don't send when ended/ending
 
     const timestamp = new Date().toISOString();
 
@@ -232,9 +306,15 @@ const AdminCustomerCare: React.FC = () => {
   };
 
   const handleTypingInput = () => {
-    if (activeConvo) {
+    if (activeConvo && chatStatus === "open") {
       socket.emit("typing", { sender: "admin", conversationId: activeConvo._id });
     }
+  };
+
+  const endConversation = () => {
+    if (!activeConvo) return;
+    setChatStatus("ending");
+    socket.emit("end_chat", { conversationId: activeConvo._id, endedBy: "admin" });
   };
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -321,7 +401,13 @@ const AdminCustomerCare: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  {unreadConversations[convo._id] && <div className="w-2.5 h-2.5 rounded-full bg-black"></div>}
+                  <div className="flex items-center gap-2">
+                    {convo.status === "ended" ? (
+                      <div className="text-xs text-yellow-600 px-2 py-0.5 rounded bg-yellow-50 border border-yellow-100">Closed</div>
+                    ) : unreadConversations[convo._id] ? (
+                      <div className="w-2.5 h-2.5 rounded-full bg-black"></div>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             ))
@@ -339,14 +425,46 @@ const AdminCustomerCare: React.FC = () => {
                 <Menu className="w-5 h-5" />
               </button>
               <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-bold text-sm">{activeConvo.name.charAt(0).toUpperCase()}</div>
-              <div>
+              <div className="flex-1">
                 <h2 className="font-bold text-sm text-gray-900">{activeConvo.name}</h2>
-                <p className="text-xs text-gray-500">Active now</p>
+                <p className="text-xs text-gray-500">{activeConvo.status === "ended" ? "Closed" : "Active now"}</p>
+              </div>
+
+              {/* End Chat Controls */}
+              <div className="flex items-center gap-2">
+                {chatStatus === "open" && (
+                  <button
+                    onClick={endConversation}
+                    className="px-3 py-1 rounded-md bg-yellow-50 border border-yellow-100 text-yellow-700 text-xs hover:bg-yellow-100 transition-all"
+                  >
+                    End Chat
+                  </button>
+                )}
+
+                {chatStatus === "ending" && (
+                  <div className="px-3 py-1 rounded-md bg-yellow-50 border border-yellow-100 text-yellow-700 text-xs flex items-center gap-2">
+                    <div style={{ width: 12, height: 12, border: "2px solid rgba(0,0,0,0.12)", borderTopColor: "rgba(0,0,0,0.6)", borderRadius: 9999, animation: "spin 1s linear infinite" }} />
+                    Ending...
+                  </div>
+                )}
+
+                {chatStatus === "ended" && (
+                  <div className="px-3 py-1 rounded-md bg-gray-50 border border-gray-100 text-sm text-gray-600">
+                    Closed {endedBy ? `by ${endedBy}` : ""}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-3 md:p-5 space-y-3 bg-gray-50">
+              {chatStatus === "ended" && (
+                <div className="p-3 rounded-md bg-yellow-50 border border-yellow-100 text-sm text-gray-800">
+                  {endedBy ? `Conversation closed by ${endedBy}.` : "Conversation closed."}
+                  {endedAt && <div className="text-xs text-gray-600 mt-1">Closed at: {formatTime(endedAt)}</div>}
+                </div>
+              )}
+
               {messages.map((msg) => (
                 <div key={msg._id} className={`flex ${msg.sender === "admin" ? "justify-end" : "justify-start"} animate-fadeIn`}>
                   <div className={`max-w-md ${msg.sender === "admin" ? "order-2" : "order-1"}`}>
@@ -397,11 +515,12 @@ const AdminCustomerCare: React.FC = () => {
                 className="hidden"
                 onChange={handleFileSelect}
                 accept="*/*"
+                disabled={chatStatus !== "open"}
               />
               <Paperclip 
                 size={20} 
-                onClick={() => fileInputRef.current?.click()} 
-                className={`cursor-pointer ${selectedFile ? "text-black" : "text-gray-400"}`} 
+                onClick={() => { if (chatStatus === "open") fileInputRef.current?.click(); }} 
+                className={`cursor-pointer ${selectedFile ? "text-black" : "text-gray-400"} ${chatStatus !== "open" ? "opacity-40 cursor-not-allowed" : ""}`} 
               />
               <input
                 value={input}
@@ -409,10 +528,11 @@ const AdminCustomerCare: React.FC = () => {
                 onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                 placeholder={selectedFile ? `Send "${selectedFile.name}"` : "Type your message..."}
                 className="flex-1 px-4 py-2.5 rounded-full border-2 border-gray-200 focus:border-black focus:outline-none transition-all bg-gray-50 text-base"
+                disabled={chatStatus !== "open"}
               />
               <button
                 onClick={sendMessage}
-                disabled={!input.trim() && !selectedFile}
+                disabled={!input.trim() && !selectedFile || chatStatus !== "open"}
                 className="w-11 h-11 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-black"
               >
                 <Send className="w-4 h-4" />
@@ -434,6 +554,7 @@ const AdminCustomerCare: React.FC = () => {
 
       <style jsx>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
         .delay-150 { animation-delay: 0.15s; }
         .delay-300 { animation-delay: 0.3s; }
