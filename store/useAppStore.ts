@@ -155,6 +155,14 @@ export interface UserProfile {
   subscription: { plan: string; status: string }
   wallet: {
     payoutAccounts: PayoutAccount[]
+  };
+  kyc: {
+    type: string;
+    idNumber: string
+    refrence: string;
+    isVerified: boolean;
+    verifiedAt?: Date;
+    data?: Record<string, any>;
   }
 }
 

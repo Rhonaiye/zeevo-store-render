@@ -19,8 +19,6 @@ import Notification from '@/components/ui/notification';
 import Sidebar from '@/components/ui/sideBar';
 import { useAppStore, Analytics, Product, UserProfile, NavItem, ActionCard, QuickStat, FormData, ProductFormData, NotificationData, Store as IStore } from '@/store/useAppStore';
 import OrdersManagement from '@/components/layout/ordersManagement';
-import WalletManagement from '@/components/layout/walletManagement';
-import KYCOnboardingModal from '@/components/layout/kycOnboard';
 import { DashboardSkeleton } from '@/components/loaders/skeletonLoader';
 import PayoutsView from '@/components/layout/payoutsView';
 import NotificationButton from '@/components/ui/notificatonButton';

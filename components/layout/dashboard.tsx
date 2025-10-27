@@ -20,7 +20,8 @@ import { QuickStat, UserProfile, ActionCard } from '@/store/useAppStore';
 import Cookies from 'js-cookie';
 import { useAppStore } from '@/store/useAppStore';
 import { useRouter } from 'next/navigation';
-import VerifyNin from './verifyNin';
+import CustomerCareChat from '../ui/customerCareChat';
+
 
 // Interface
 interface RenderDashboardProps {
@@ -77,6 +78,7 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
   const hasStores = stores.length > 0;
   const firstStore = hasStores ? stores[0] : null;
   const hasPayout = !!(userProfile?.wallet?.payoutAccounts && userProfile.wallet.payoutAccounts.length > 0);
+  const hasKYC = !!(userProfile?.kyc.isVerified);
   const [currentStep, setCurrentStep] = useState(1);
 
   const handleNavClick = (
@@ -94,13 +96,15 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
       const hasStore = hasStores;
       if (!hasStore) {
         setCurrentStep(1);
-      } else if (!hasPayout) {
+      } else if (!hasKYC) {
         setCurrentStep(2);
-      } else {
+      } else if (!hasPayout) {
         setCurrentStep(3);
+      } else {
+        setCurrentStep(4);
       }
     }
-  }, [userProfile, hasStores, hasPayout]);
+  }, [userProfile, hasStores, hasPayout, hasKYC]);
 
   const onboardingSteps = useMemo(() => [
     {
@@ -115,16 +119,26 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
     },
     {
       step: 2,
+      title: 'Complete KYC Verification',
+      description: 'Finish your KYC to start collecting store payments.',
+      icon: CheckCircle,
+      action: () => {
+        handleNavClick('settings');
+      },
+      completed: hasKYC,
+    },
+    {
+      step: 3,
       title: 'Add Payout Account',
       description: 'Connect your bank or payout method to receive earnings from sales.',
       icon: Wallet,
       action: () => {
-        handleNavClick('zeevo_wallet');
+        handleNavClick('settings');
       },
       completed: hasPayout,
     },
     {
-      step: 3,
+      step: 4,
       title: 'Start Selling',
       description: 'Once your store is ready! Add products and watch sales come in.',
       icon: ShoppingCart,
@@ -134,10 +148,10 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
       },
       completed: true,
     },
-  ], [setActiveSection, userProfile, stores, addNotification, hasStores, hasPayout]);
+  ], [setActiveSection, userProfile, stores, addNotification, hasStores, hasPayout, hasKYC]);
 
   const renderOnboarding = () => {
-    const progress = ((currentStep - 1) / (onboardingSteps.length - 1)) * 100;
+    const progress = Math.round(((currentStep - 1) / (onboardingSteps.length - 1)) * 100);
     return (
       <div className="max-w-4xl mx-auto p-6">
         {/* Progress Bar */}
@@ -208,7 +222,7 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
         </div>
 
         {/* Call to Action */}
-        {hasStores && hasPayout && (
+        {hasStores && hasKYC && hasPayout && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -219,13 +233,15 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
             <p className="text-gray-600 mb-4">Your store is set up and payout is configured. Start adding products now.</p>
             <motion.button
               whileHover={{ scale: 1.05 }}
-              onClick={onboardingSteps[2].action}
+              onClick={onboardingSteps[3].action}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
             >
               Add First Product
             </motion.button>
           </motion.div>
         )}
+
+       
       </div>
     );
   };
@@ -573,7 +589,7 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
           >
             <LoadingState />
           </motion.div>
-        ) : !hasStores || !hasPayout ? (
+        ) : !hasStores || !hasKYC || !hasPayout ? (
           <motion.div
             key="onboarding"
             initial={{ opacity: 0, x: 20 }}
@@ -582,6 +598,7 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
             transition={{ duration: 0.3 }}
           >
             {renderOnboarding()}
+             <CustomerCareChat/>
           </motion.div>
         ) : (
           <motion.div
@@ -595,8 +612,9 @@ const RenderDashboard: FC<RenderDashboardProps> = ({
             <StoreStatus />
             <ActionCardsSection />
             <HelpSection />
-            <VerifyNin/>
+             <CustomerCareChat/>
           </motion.div>
+          
         )}
       </AnimatePresence>
     </div>
