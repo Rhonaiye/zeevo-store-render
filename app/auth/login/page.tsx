@@ -46,7 +46,7 @@ export default function LoginPage() {
       if (!res.ok) {
         setError(data?.message || "Login failed");
       } else {
-        Cookies.set("token", data.data.token);
+        Cookies.set("token", data.data.token, { domain: ".zeevo.shop" });
         Cookies.set("user", JSON.stringify(data.user));
         router.replace("/dashboard");
       }
@@ -83,7 +83,7 @@ export default function LoginPage() {
         throw new Error(data?.message || "Google login failed");
       }
 
-      Cookies.set("token", data.token);
+      Cookies.set("token", data.token, { domain: ".zeevo.shop" });
       Cookies.set("user", JSON.stringify(data.user));
 
       router.replace("/dashboard");
