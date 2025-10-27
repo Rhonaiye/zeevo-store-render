@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Wallet2
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -28,6 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, sidebarOpen,
     { id: 'users', label: 'Users', icon: Users },
     { id: 'stores', label: 'Stores', icon: Store },
     { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
+    { id: 'payouts', label: 'Payouts', icon: Wallet2 },
     { id: 'products', label: 'products', icon: BarChart3 },
     { id: 'customer_care', label: 'Customer Care', icon: Users },
     { id: 'settings', label: 'Settings', icon: Settings },
