@@ -23,9 +23,14 @@ export async function generateMetadata({ params }: { params: { slug: string } | 
       return base.replace(/\/$/, '') + (path.startsWith('/') ? path : `/${path}`);
     };
 
-    const baseUrl = store.domain || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
-    const logoUrl = makeAbsolute(store.logo, store.domain || undefined);
-    const heroUrl = makeAbsolute(store.heroImage, store.domain || undefined);
+    // Determine a reliable base URL for the store. If the store provides a domain use it,
+    // otherwise fall back to the canonical subdomain: <slug>.zeevo.shop
+    const baseUrl = store.domain
+      ? (store.domain.startsWith('http://') || store.domain.startsWith('https://') ? store.domain : `https://${store.domain}`)
+      : `https://${slug}.zeevo.shop`;
+
+    const logoUrl = makeAbsolute(store.logo, baseUrl);
+    const heroUrl = makeAbsolute(store.heroImage, baseUrl);
 
     return {
       title: store.name || 'Online Store',
@@ -41,7 +46,8 @@ export async function generateMetadata({ params }: { params: { slug: string } | 
       openGraph: {
         title: store.name,
         description: store.description || 'Welcome to our online store. Shop our curated collection of products.',
-        url: store.domain || `${(process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '')}/store/${slug}`,
+  // Use the computed baseUrl as the canonical store URL (prefer store.domain, else slug.zeevo.shop)
+  url: baseUrl.replace(/\/$/, ''),
         siteName: store.name,
         locale: 'en_US',
         type: 'website',
@@ -124,9 +130,13 @@ export default async function StoreLayout({
   };
 
   if (storeData) {
-    const baseUrl = storeData.domain || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
-    storeData.logo = makeAbsolute(storeData.logo, storeData.domain || undefined) || undefined;
-    storeData.heroImage = makeAbsolute(storeData.heroImage, storeData.domain || undefined) || undefined;
+    // Prefer store domain when available; otherwise use the canonical subdomain <slug>.zeevo.shop
+    const baseUrl = storeData.domain
+      ? (storeData.domain.startsWith('http://') || storeData.domain.startsWith('https://') ? storeData.domain : `https://${storeData.domain}`)
+      : `https://${slug}.zeevo.shop`;
+
+    storeData.logo = makeAbsolute(storeData.logo, baseUrl) || undefined;
+    storeData.heroImage = makeAbsolute(storeData.heroImage, baseUrl) || undefined;
     // optionally normalize other image fields if present
   }
 
