@@ -7,7 +7,9 @@ import { useCartStore } from '@/store/useCartStore';
 import { Store } from '@/store/useAppStore';
 import Header from '@/components/template/modernStore/header';
 import HeaderSleek from '@/components/template/sleek/header';
-import Footer from '@/components/template/modernStore/footer';
+import ModernFooter from '@/components/template/modernStore/footer';
+import SleekFooter from '@/components/template/sleek/footer';
+
 
 const CartView: React.FC = () => {
   const [store, setStore] = useState<Store | null>(null);
@@ -243,7 +245,14 @@ const CartView: React.FC = () => {
   const isPickupEnabled = store.pickup?.enabled;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div 
+      style={{ 
+        fontFamily: store.font,
+        backgroundColor: store.primaryColor,
+        color: store.secondaryColor
+      }} 
+      className="min-h-screen"
+    >
       {store.template === 'modernStore' ? (
         <Header
           store={store}
@@ -265,40 +274,47 @@ const CartView: React.FC = () => {
 
       <section className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="text-center mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 text-gray-900">
+          <h2 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3" style={{ color: store.secondaryColor }}>
             Your Cart ({getTotalItems()})
           </h2>
-          <p className="text-gray-600 text-sm sm:text-base">
+          <p className="text-sm sm:text-base" style={{ color: store.secondaryColor }}>
             {getTotalItems() === 0 ? 'Your cart is empty' : 'Review your selected items'}
           </p>
         </div>
 
         {items.length === 0 ? (
-          <div className="text-center text-gray-500 py-10">
-            <ShoppingBag className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+          <div className="text-center py-10" style={{ color: store.secondaryColor }}>
+            <ShoppingBag className="w-10 h-10 mx-auto mb-3" style={{ color: store.secondaryColor, opacity: 0.5 }} />
             <p className="text-base sm:text-lg font-medium">No items in your cart</p>
             <Link
               href={`/`}
-              className="inline-flex items-center gap-2 px-6 py-3 mt-4 rounded-full text-white font-semibold transition-all hover:scale-105"
-              style={{ backgroundColor: store.secondaryColor }}
+              className="inline-flex items-center gap-2 px-6 py-3 mt-4 rounded-full font-semibold transition-all hover:scale-105 text-sm sm:text-base"
+              style={{ 
+                backgroundColor: store.secondaryColor,
+                color: store.primaryColor 
+              }}
             >
               Continue Shopping
             </Link>
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div 
+              className="rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6"
+              style={{ backgroundColor: store.primaryColor }}
+            >
               <div className="space-y-4">
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-3 sm:gap-4 border-b border-gray-100 pb-4 last:border-b-0">
                     <div className="flex-1">
                       <Link
                         href={`/${store.slug}/product/${item.id}`}
-                        className="font-medium text-sm sm:text-base text-gray-900 hover:underline"
+                        className="font-medium text-sm sm:text-base hover:underline"
+                        style={{ color: store.secondaryColor }}
                       >
                         {item.title}
                       </Link>
-                      <p className="text-gray-600 text-xs sm:text-sm mt-1">{formatPrice(item.price)}</p>
+                      <p className="text-xs sm:text-sm mt-1" style={{ color: store.secondaryColor }}>{formatPrice(item.price)}</p>
                       <div className="flex items-center gap-2 sm:gap-3 mt-2">
                         <button
                           onClick={() => handleQuantityChange(item, -1)}
@@ -307,7 +323,7 @@ const CartView: React.FC = () => {
                         >
                           <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
                         </button>
-                        <span className="font-medium text-gray-900 text-xs sm:text-sm">
+                        <span className="font-medium text-xs sm:text-sm" style={{ color: store.secondaryColor }}>
                           {item.quantity}
                         </span>
                         <button
@@ -327,7 +343,7 @@ const CartView: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                    <p className="text-gray-900 font-semibold text-sm sm:text-base">
+                    <p className="font-semibold text-sm sm:text-base" style={{ color: store.secondaryColor }}>
                       {formatPrice(item.price * item.quantity)}
                     </p>
                   </div>
@@ -335,35 +351,38 @@ const CartView: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Order Summary</h3>
+            <div 
+              className="rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6"
+              style={{ backgroundColor: store.primaryColor }}
+            >
+              <h3 className="text-lg sm:text-xl font-semibold mb-4" style={{ color: store.secondaryColor }}>Order Summary</h3>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm sm:text-base text-gray-500 font-normal">
+                <span className="text-sm sm:text-base font-normal" style={{ color: store.secondaryColor }}>
                   Subtotal ({getTotalItems()} items)
                 </span>
-                <span className="text-sm sm:text-base font-semibold text-gray-900">
+                <span className="text-sm sm:text-base font-semibold" style={{ color: store.secondaryColor }}>
                   {formatPrice(getTotalPrice())}
                 </span>
               </div>
               {formData.deliveryMethod === 'shipping' && (
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-sm sm:text-base text-gray-500 font-normal">Shipping Fee</span>
-                  <span className="text-sm sm:text-base font-semibold text-gray-900">
+                  <span className="text-sm sm:text-base font-normal" style={{ color: store.secondaryColor }}>Shipping Fee</span>
+                  <span className="text-sm sm:text-base font-semibold" style={{ color: store.secondaryColor }}>
                     {formatPrice(getShippingFee())}
                   </span>
                 </div>
               )}
               <div className="flex justify-between items-center mb-4">
-                <span className="text-sm sm:text-base text-gray-600 font-semibold">Total</span>
-                <span className="text-sm sm:text-base font-semibold text-gray-900">
+                <span className="text-sm sm:text-base font-semibold">Total</span>
+                <span className="text-sm sm:text-base font-semibold" style={{ color: store.secondaryColor }}>
                   {formatPrice(getTotalPrice() + getShippingFee())}
                 </span>
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Checkout</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-4" style={{ color: store.secondaryColor }}>Checkout</h3>
               <div className="space-y-4">
                 {(isShippingEnabled || isPickupEnabled) && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Method</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: store.secondaryColor }}>Delivery Method</label>
                     <div className="flex gap-4">
                       {isPickupEnabled && (
                         <label className="flex items-center gap-2">
@@ -374,8 +393,9 @@ const CartView: React.FC = () => {
                             checked={formData.deliveryMethod === 'pickup'}
                             onChange={handleInputChange}
                             className="text-indigo-600 focus:ring-indigo-500"
+                            style={{ accentColor: store.secondaryColor }}
                           />
-                          <span className="text-sm text-gray-700">Pickup</span>
+                          <span className="text-sm" style={{ color: store.secondaryColor }}>Pickup</span>
                         </label>
                       )}
                       {isShippingEnabled && (
@@ -387,27 +407,32 @@ const CartView: React.FC = () => {
                             checked={formData.deliveryMethod === 'shipping'}
                             onChange={handleInputChange}
                             className="text-indigo-600 focus:ring-indigo-500"
+                            style={{ accentColor: store.secondaryColor }}
                           />
-                          <span className="text-sm text-gray-700">Shipping</span>
+                          <span className="text-sm" style={{ color: store.secondaryColor }}>Shipping</span>
                         </label>
                       )}
                     </div>
                     {formData.deliveryMethod === 'pickup' && store.pickup?.note && (
-                      <p className="text-sm text-gray-600 mt-2">{store.pickup.note}</p>
+                      <p className="text-sm mt-2" style={{ color: store.secondaryColor }}>{store.pickup.note}</p>
                     )}
                   </div>
                 )}
                 {formData.deliveryMethod === 'shipping' && isShippingEnabled && (
                   <div ref={dropdownRef}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Location</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: store.secondaryColor }}>Shipping Location</label>
                     <div className="relative">
                       <button
                         type="button"
-                        className="w-full text-left p-3 rounded-md border border-gray-300 bg-white text-sm text-gray-900 shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        className="w-full text-left p-3 rounded-md border shadow-sm focus:outline-none focus:ring-1 sm:text-sm"
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         aria-expanded={isDropdownOpen}
                         aria-haspopup="listbox"
-                        style={{ borderColor: store.secondaryColor }}
+                        style={{ 
+                          borderColor: store.secondaryColor,
+                          backgroundColor: store.primaryColor,
+                          color: store.secondaryColor 
+                        }}
                       >
                         <span>
                           {formData.selectedShippingLocation || 'Select a location'}
@@ -419,16 +444,21 @@ const CartView: React.FC = () => {
                       </button>
                       {isDropdownOpen && (
                         <ul
-                          className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto focus:outline-none"
+                          className="absolute z-10 mt-1 w-full border rounded-md shadow-lg max-h-60 overflow-auto focus:outline-none"
                           role="listbox"
+                          style={{ 
+                            backgroundColor: store.primaryColor,
+                            borderColor: store.secondaryColor 
+                          }}
                         >
                           {store.shipping?.locations.map((location) => (
                             <li
                               key={location.area}
-                              className="px-3 py-2 text-sm text-gray-900 hover:bg-gray-100 cursor-pointer"
+                              className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer"
                               onClick={() => handleShippingLocationSelect(location.area)}
                               role="option"
                               aria-selected={formData.selectedShippingLocation === location.area}
+                              style={{ color: store.secondaryColor }}
                             >
                               {location.area} ({formatPrice(location.fee)}) {location.note ? `- ${location.note}` : ''}
                             </li>
@@ -439,7 +469,7 @@ const CartView: React.FC = () => {
                   </div>
                 )}
                 <div>
-                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="fullName" className="block text-sm font-medium" style={{ color: store.secondaryColor }}>
                     Full Name
                   </label>
                   <input
@@ -448,13 +478,14 @@ const CartView: React.FC = () => {
                     id="fullName"
                     value={formData.fullName}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full text-black p-3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full p-3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="John Doe"
                     required
+                    style={{ color: store.secondaryColor }}
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="email" className="block text-sm font-medium" style={{ color: store.secondaryColor }}>
                     Email
                   </label>
                   <input
@@ -463,13 +494,14 @@ const CartView: React.FC = () => {
                     id="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md text-black p-3 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md p-3 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="you@example.com"
                     required
+                    style={{ color: store.secondaryColor }}
                   />
                 </div>
                 <div>
-                  <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="phoneNumber" className="block text-sm font-medium" style={{ color: store.secondaryColor }}>
                     Phone Number
                   </label>
                   <input
@@ -478,13 +510,14 @@ const CartView: React.FC = () => {
                     id="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md p-3 text-black border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md p-3 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="+234 "
                     required
+                    style={{ color: store.secondaryColor }}
                   />
                 </div>
                 <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="address" className="block text-sm font-medium" style={{ color: store.secondaryColor }}>
                     Address
                   </label>
                   <textarea
@@ -492,37 +525,43 @@ const CartView: React.FC = () => {
                     id="address"
                     value={formData.address}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md p-3 text-black border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md p-3 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="123 Main St, City, Country"
                     rows={4}
                     required
+                    style={{ color: store.secondaryColor }}
                   />
                 </div>
                 {checkoutError && (
-                  <p className="text-sm text-red-600">{checkoutError}</p>
+                  <p className="text-sm" style={{ color: 'red' }}>{checkoutError}</p>
                 )}
                 <button
                   onClick={handleCheckout}
-                  className="w-full py-3 rounded-lg font-semibold text-white transition-all hover:scale-[0.98] text-sm sm:text-base"
-                  style={{ backgroundColor: store.secondaryColor }}
+                  className="w-full py-3 rounded-lg font-semibold transition-all hover:scale-[0.98] text-sm sm:text-base"
+                  style={{ 
+                    backgroundColor: store.secondaryColor,
+                    color: store.primaryColor 
+                  }}
                   disabled={isCheckoutLoading || items.length === 0}
                 >
                   {isCheckoutLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto" style={{ color: store.primaryColor }} />
                   ) : (
                     'Proceed to Payment'
                   )}
                 </button>
                 <button
                   onClick={() => clearCart()}
-                  className="w-full py-3 mt-3 rounded-lg font-semibold text-gray-600 border border-gray-200 hover:bg-gray-100 transition-all text-sm sm:text-base"
+                  className="w-full py-3 mt-3 rounded-lg font-semibold border border-gray-200 hover:bg-gray-100 transition-all text-sm sm:text-base"
+                  style={{ color: store.secondaryColor }}
                   aria-label="Clear cart"
                 >
                   Clear Cart
                 </button>
                 <Link
                   href={`/`}
-                  className="block text-center mt-3 text-sm text-gray-600 hover:underline"
+                  className="block text-center mt-3 hover:underline text-sm"
+                  style={{ color: store.secondaryColor }}
                 >
                   Continue Shopping
                 </Link>
@@ -532,7 +571,13 @@ const CartView: React.FC = () => {
         )}
       </section>
 
-      <Footer store={store} />
+      { store.template === 'modernStore' ? (
+        <ModernFooter
+          store={store}
+        />
+      ) : store.template === 'sleek' ? (<SleekFooter name={store.name} logo={store.logo} secondaryColor={store.secondaryColor} contact={store.contact} socialLinks={store.socialLinks} policies={store.policies} />) : null
+      
+     }
     </div>
   );
 };

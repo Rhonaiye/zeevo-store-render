@@ -63,7 +63,6 @@ const TitilliumFont = Titillium_Web({
 });
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'),
   title: {
     default: 'Online Store',
     template: '%s'
