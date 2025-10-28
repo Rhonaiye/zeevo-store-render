@@ -1,32 +1,36 @@
 // seo.config.ts
 import { DefaultSeoProps } from 'next-seo'
 
-const SEOConfig: DefaultSeoProps = {
-  title: 'Zeevo — Create Your Online Store in Minutes',
-  titleTemplate: '%s | Zeevo',
-  defaultTitle: 'Zeevo — Create Your Online Store in Minutes',
-  description:
-    'Zeevo lets you build and manage your online store easily. Sell products, accept payments, and grow your business with powerful e-commerce tools.',
-  canonical: 'https://zeevo.shop',
+const createSEOConfig = (storeData?: {
+  name?: string;
+  description?: string;
+  domain?: string;
+  socialLinks?: Record<string, string>;
+}): DefaultSeoProps => ({
+  title: storeData?.name || 'Online Store',
+  titleTemplate: `%s | ${storeData?.name || 'Store'}`,
+  defaultTitle: storeData?.name || 'Online Store',
+  description: storeData?.description || 'Welcome to our online store. Shop our products and find great deals.',
+  canonical: storeData?.domain || '',
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://zeevo.shop',
-    siteName: 'Zeevo',
+    url: storeData?.domain || '',
+    siteName: storeData?.name || 'Online Store',
     images: [
       {
-        url: 'https://zeevo.shop/zeevo-fb.png', // Your default OG image
+        url: '/store-banner.jpg',
         width: 1200,
         height: 630,
-        alt: 'Zeevo — Create Your Online Store in Minutes',
+        alt: storeData?.name || 'Online Store',
       },
     ],
   },
   twitter: {
-    handle: '@ZeevoHQ',
-    site: '@ZeevoHQ',
+    handle: storeData?.socialLinks?.twitter || '',
+    site: storeData?.socialLinks?.twitter || '',
     cardType: 'summary_large_image',
   },
-}
+})
 
-export default SEOConfig
+export default createSEOConfig
