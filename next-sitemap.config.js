@@ -1,17 +1,22 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: 'https://zeevo.shop', // Replace with your domain
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://zeevo.shop',
   generateRobotsTxt: true,
-  sitemapSize: 7000,
-  changefreq: 'daily',
-  priority: 0.7,
-  exclude: ['/private-page'],
+  exclude: ['/api/*'],
   robotsTxtOptions: {
     policies: [
       {
         userAgent: '*',
         allow: '/',
+        disallow: ['/api/*'],
       },
     ],
+  },
+  // Disable static sitemap generation since we're using a dynamic one
+  generateIndexSitemap: false,
+  outDir: 'public',
+  transform: async (config, path) => {
+    // Return null for any paths we don't want in the static sitemap
+    return null;
   },
 }

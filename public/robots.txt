@@ -1,9 +1,7 @@
 # *
 User-agent: *
 Allow: /
+Disallow: /api/*
 
 # Host
 Host: https://zeevo.shop
-
-# Sitemaps
-Sitemap: https://zeevo.shop/sitemap.xml
