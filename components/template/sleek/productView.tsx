@@ -67,18 +67,7 @@ const SleekProductDetails: React.FC<ProductDetailsProps> = ({ store, product }) 
     }).format(price);
   };
 
-  const getSocialIcon = (platform: string) => {
-    switch (platform) {
-      case 'instagram':
-        return <Instagram size={18} />;
-      case 'facebook':
-        return <Facebook size={18} />;
-      case 'twitter':
-        return <Twitter size={18} />;
-      default:
-        return null;
-    }
-  };
+
 
   const nextImage = () => {
     if (product.images && product.images.length > 1) {
@@ -161,11 +150,10 @@ const SleekProductDetails: React.FC<ProductDetailsProps> = ({ store, product }) 
         if (error instanceof Error) {
           console.error('Error sharing:', error);
         }
-        // Fallback to copy URL
-        fallbackCopyUrl();
+      
       }
     } else {
-      fallbackCopyUrl();
+       return null
     }
   };
 
