@@ -79,19 +79,17 @@ const Footer: React.FC<FooterProps> = ({
       <div className="relative">
         {/* Main footer content */}
         <div className="max-w-7xl mx-auto px-6 py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            {/* Brand section - spans 2 columns on large screens */}
-            <div className="lg:col-span-2 space-y-6">
+            {/* Brand section */}
+            <div className="space-y-6">
               <div className="flex items-center gap-4">
                 {logo && (
-                  <div className="relative bg-white">
-                    <img 
-                      src={logo} 
-                      alt={`${name} logo`} 
-                      className="w-12 h-12 rounded-2xl " 
-                    />
-                  </div>
+                  <img 
+                    src={logo} 
+                    alt={`${name} logo`} 
+                    className="w-12 h-12 rounded-2xl bg-white flex-shrink-0" 
+                  />
                 )}
                 <div>
                   <h2 className="text-white font-bold text-2xl tracking-tight">{name}</h2>
@@ -200,24 +198,6 @@ const Footer: React.FC<FooterProps> = ({
                 {(!policies?.returns && !policies?.terms) && (
                   <p className="text-gray-400 text-sm">Policies coming soon</p>
                 )}
-              </div>
-            </div>
-
-            {/* Newsletter signup */}
-            <div className="space-y-6">
-              <h3 className="text-white font-semibold text-lg">Stay Updated</h3>
-              <p className="text-gray-300 text-sm">Get the latest updates on new products and exclusive offers.</p>
-              <div className="space-y-3">
-                <div className="relative">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all duration-300"
-                  />
-                </div>
-                <button className="w-full px-4 py-3 bg-white text-black font-medium rounded-xl hover:bg-gray-100 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95">
-                  Subscribe
-                </button>
               </div>
             </div>
           </div>

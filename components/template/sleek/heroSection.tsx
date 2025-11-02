@@ -13,7 +13,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   name,
   description,
   secondaryColor = '#d97706',
-  scrollDistance = 450,
+  scrollDistance = 500,
   heroImage,
 }) => {
   const handleViewProducts = () => {
@@ -25,7 +25,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
   return (
     <section
-      className="relative min-h-[70vh] md:min-h-[85vh] flex items-center justify-center py-20 md:py-32"
+      className="relative min-h-[70vh] md:min-h-[68vh] flex items-center justify-center py-20 md:py-32"
       style={{
         backgroundColor: secondaryColor,
         backgroundImage: heroImage ? `url(${heroImage})` : undefined,
@@ -61,7 +61,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         {/* Call to action */}
         <button
           onClick={handleViewProducts}
-          className="bg-white text-gray-900 px-10 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
+          className="bg-white text-gray-900 px-10 py-2.5 rounded-full font-semibold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
         >
           View Products
         </button>
