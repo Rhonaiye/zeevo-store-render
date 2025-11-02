@@ -152,7 +152,7 @@ const Header: React.FC<HeaderProps> = ({
                   }, 150);
                 }}
                 placeholder="Search products..."
-                className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm outline-none"
+                className="w-full px-3 py-2 border border-gray-200 rounded-md max-sm:text-base text-sm outline-none"
                 aria-label="Search products"
                 autoFocus
               />
