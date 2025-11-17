@@ -31,6 +31,8 @@ const SleekProductDetails: React.FC<ProductDetailsProps> = ({ store, product }) 
   const [quantity, setQuantity] = useState<number>(1);
   const [isSlideshowPlaying, setIsSlideshowPlaying] = useState(true);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [wasPlaying, setWasPlaying] = useState(false);
   const slideshowIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const { items, addItem, removeItem } = useCartStore();
@@ -52,11 +54,18 @@ const SleekProductDetails: React.FC<ProductDetailsProps> = ({ store, product }) 
     };
   }, [product.images, isSlideshowPlaying]);
 
+  useEffect(() => {
+    if (!isModalOpen && wasPlaying) {
+      setIsSlideshowPlaying(true);
+    }
+  }, [isModalOpen, wasPlaying]);
+
   const pauseSlideshow = () => {
     setIsSlideshowPlaying(false);
   };
 
-  const toggleSlideshow = () => {
+  const toggleSlideshow = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setIsSlideshowPlaying(!isSlideshowPlaying);
   };
 
@@ -67,16 +76,22 @@ const SleekProductDetails: React.FC<ProductDetailsProps> = ({ store, product }) 
     }).format(price);
   };
 
+  const openModal = () => {
+    setWasPlaying(isSlideshowPlaying);
+    pauseSlideshow();
+    setIsModalOpen(true);
+  };
 
-
-  const nextImage = () => {
+  const nextImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (product.images && product.images.length > 1) {
       setSelectedImageIndex((prev) => (prev + 1) % product.images!.length);
       pauseSlideshow();
     }
   };
 
-  const prevImage = () => {
+  const prevImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (product.images && product.images.length > 1) {
       setSelectedImageIndex((prev) => (prev - 1 + product.images!.length) % product.images!.length);
       pauseSlideshow();
@@ -248,7 +263,7 @@ const SleekProductDetails: React.FC<ProductDetailsProps> = ({ store, product }) 
             animate={{ opacity: 1, x: 0 }}
             className="lg:col-span-6 space-y-4"
           >
-            <div className="relative aspect-square rounded-2xl overflow-hidden shadow-lg group cursor-pointer">
+            <div onClick={openModal} className="relative aspect-square rounded-2xl overflow-hidden shadow-lg group cursor-pointer">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={selectedImageIndex}
@@ -273,7 +288,7 @@ const SleekProductDetails: React.FC<ProductDetailsProps> = ({ store, product }) 
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={prevImage}
+                    onClick={(e) => prevImage(e)}
                     className="absolute -left-2 top-1/2 -translate-y-1/2 p-1.5 bg-white/95 hover:bg-white rounded-full shadow-md transition-all z-10"
                   >
                     <ChevronLeft size={16} className="text-gray-700" />
@@ -281,17 +296,17 @@ const SleekProductDetails: React.FC<ProductDetailsProps> = ({ store, product }) 
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={nextImage}
+                    onClick={(e) => nextImage(e)}
                     className="absolute -right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white/95 hover:bg-white rounded-full shadow-md transition-all z-10"
                   >
                     <ChevronRight size={16} className="text-gray-700" />
                   </motion.button>
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-black/60 text-white text-xs rounded-full flex items-center gap-1">
+                  <div onClick={(e) => e.stopPropagation()} className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-black/60 text-white text-xs rounded-full flex items-center gap-1">
                     <span>{selectedImageIndex + 1}</span>
                     <span>/ {product.images.length}</span>
                     <motion.button
                       whileHover={{ scale: 1.1 }}
-                      onClick={toggleSlideshow}
+                      onClick={(e) => toggleSlideshow(e)}
                       className="ml-1 p-0.5 rounded hover:bg-white/20"
                     >
                       {isSlideshowPlaying ? <Pause size={10} /> : <Play size={10} />}
@@ -596,6 +611,111 @@ const SleekProductDetails: React.FC<ProductDetailsProps> = ({ store, product }) 
           </motion.div>
         </div>
       </section>
+
+      {/* Full Image Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsModalOpen(false)}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-4xl max-h-full w-full h-full flex flex-col"
+            >
+              {/* Close button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsModalOpen(false)}
+                className="absolute -top-4 -right-4 z-10 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+              >
+                <X size={24} />
+              </motion.button>
+
+              {/* Main image area */}
+              <div className="relative flex-1 flex items-center justify-center">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={selectedImageIndex}
+                    initial={{ x: 20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -20, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: 'easeInOut' }}
+                    className="relative w-full h-full max-w-full max-h-full"
+                  >
+                    <Image
+                      src={product.images?.[selectedImageIndex] || '/api/placeholder/800/800'}
+                      alt={`${product.name} - Image ${selectedImageIndex + 1}`}
+                      fill
+                      className="object-contain"
+                      quality={90}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+
+                {product.images && product.images.length > 1 && (
+                  <>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => prevImage()}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 rounded-full text-white transition-all"
+                    >
+                      <ChevronLeft size={32} />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => nextImage()}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 rounded-full text-white transition-all"
+                    >
+                      <ChevronRight size={32} />
+                    </motion.button>
+                  </>
+                )}
+              </div>
+
+              {/* Thumbnails in modal */}
+              {product.images && product.images.length > 1 && (
+                <div className="flex gap-3 overflow-x-auto pb-2 mt-4 px-4 snap-x snap-mandatory scrollbar-hide">
+                  {product.images.map((image, index) => (
+                    <motion.button
+                      key={index}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setSelectedImageIndex(index);
+                        pauseSlideshow();
+                      }}
+                      className={`relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 snap-center transition-all duration-200 ${
+                        selectedImageIndex === index
+                          ? 'border-white ring-2 ring-white/30 shadow-md'
+                          : 'border-transparent hover:border-white/30'
+                      }`}
+                    >
+                      <Image
+                        src={image}
+                        alt={`${product.name} thumbnail ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        quality={70}
+                      />
+                    </motion.button>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Footer
                name={store.name}
                logo={store.logo}
