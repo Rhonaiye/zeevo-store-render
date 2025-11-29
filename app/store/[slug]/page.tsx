@@ -121,9 +121,12 @@ const StoreNotFound = ({ slug }: { slug: string }) => {
   );
 };
 
+import ZeevoPageRenderer from '@/components/renderer/ZeevoPageRenderer';
+
 export default function StorePage() {
   const { slug } = useParams();
   const [store, setStore] = useState<any>(null);
+  const [pageData, setPageData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   // Register view once store loads
@@ -132,13 +135,13 @@ export default function StorePage() {
       // Cookie key for tracking if user has visited this specific store
       const viewCookieKey = `store_${storeId}_viewed`;
       const uniqueCookieKey = `store_${storeId}_unique`;
-      
+
       // Check if this is a unique visitor (first time ever)
       const isUniqueVisitor = !Cookies.get(uniqueCookieKey);
-      
+
       // Check if we should register a view (not viewed in last 30 minutes)
       const shouldRegisterView = !Cookies.get(viewCookieKey);
-      
+
       // Only proceed if we should register a view
       if (!shouldRegisterView) return;
 
@@ -184,10 +187,10 @@ export default function StorePage() {
         await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/analytics/page-view`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            storeId, 
-            device, 
-            region, 
+          body: JSON.stringify({
+            storeId,
+            device,
+            region,
             trafficSource,
             isUniqueVisitor // Send this flag to backend
           }),
@@ -195,7 +198,7 @@ export default function StorePage() {
 
         // Set view cookie (expires in 30 minutes)
         Cookies.set(viewCookieKey, '1', { expires: 0.0208 }); // 30 minutes
-        
+
         // Set unique visitor cookie (expires in 365 days) - only if first time
         if (isUniqueVisitor) {
           Cookies.set(uniqueCookieKey, '1', { expires: 365 });
@@ -219,8 +222,33 @@ export default function StorePage() {
         setLoading(true);
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/store/by/${slug}`);
         const data = await res.json();
+
         if (res.ok) {
-          setStore(data.data);
+          const storeData = data.data;
+          setStore(storeData);
+
+          // If custom template, fetch page data
+          if (storeData.template) {
+            try {
+              // Fetch the page data associated with this store
+              // We use the store's slug or ID to find the landing page
+              // Assuming the landing page has the same slug as the store or is the 'home' page for this store
+              // Adjusting the endpoint to fetch by storeId if possible, or using the slug if that's how it's keyed
+              const pageRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/page/untitled-page`);
+              const pageResult = await pageRes.json();
+              console.log('Fetched page result:', pageResult);
+
+              if (pageRes.ok) {
+                console.log('Setting page data:', pageResult.data || pageResult);
+                setPageData(pageResult.data || pageResult);
+              } else {
+                console.error('Failed to fetch page data');
+                // Optional: Set an error state or fallback
+              }
+            } catch (pageErr) {
+              console.error('Error fetching page data:', pageErr);
+            }
+          }
         }
       } catch (err) {
         console.error('Error fetching store:', err);
@@ -350,6 +378,13 @@ export default function StorePage() {
   if (loading) return <ScaleLoader slug={slug as string} color={store?.secondaryColor} />;
   if (!store) return <StoreNotFound slug={slug as string} />;
   if (!store.isPublished) return <PrivateStoreMessage slug={slug as string} />;
+
+  if (store.template) {
+    if (!pageData) {
+      return <ScaleLoader slug={slug as string} color={store?.secondaryColor} />;
+    }
+    return <ZeevoPageRenderer page={pageData} storeId={store._id} store={store} />;
+  }
 
   return (
     <div style={{ fontFamily: store?.font || 'Arial, sans-serif' }}>
