@@ -161,11 +161,10 @@ const ElectronicsProductDetails: React.FC<ProductDetailsProps> = ({ store, produ
                   <button
                     key={idx}
                     onClick={() => setSelectedImageIndex(idx)}
-                    className={`relative w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 transition ${
-                      selectedImageIndex === idx
+                    className={`relative w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 transition ${selectedImageIndex === idx
                         ? 'border-blue-500'
                         : 'border-gray-300'
-                    }`}
+                      }`}
                   >
                     <Image
                       src={image}
@@ -354,8 +353,5 @@ const ElectronicsProductDetails: React.FC<ProductDetailsProps> = ({ store, produ
     </div>
   );
 };
-
-// Import ShoppingBag from lucide-react at the top if not already there
-import { ShoppingBag } from 'lucide-react';
 
 export default ElectronicsProductDetails;

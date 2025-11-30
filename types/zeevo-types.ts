@@ -250,6 +250,7 @@ export interface FaqSection extends BaseSection {
     titleColor?: string;
     titleFontFamily?: string;
     titleFontSize?: number;
+    titleFontWeight?: string;
     items: {
         question: string;
         answer: string;

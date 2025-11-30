@@ -234,7 +234,7 @@ export default function StorePage() {
               // We use the store's slug or ID to find the landing page
               // Assuming the landing page has the same slug as the store or is the 'home' page for this store
               // Adjusting the endpoint to fetch by storeId if possible, or using the slug if that's how it's keyed
-              const pageRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/page/untitled-page`);
+              const pageRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/page/${slug}`);
               const pageResult = await pageRes.json();
               console.log('Fetched page result:', pageResult);
 
@@ -379,7 +379,7 @@ export default function StorePage() {
   if (!store) return <StoreNotFound slug={slug as string} />;
   if (!store.isPublished) return <PrivateStoreMessage slug={slug as string} />;
 
-  if (store.template) {
+  if (store.template === 'custom') {
     if (!pageData) {
       return <ScaleLoader slug={slug as string} color={store?.secondaryColor} />;
     }
