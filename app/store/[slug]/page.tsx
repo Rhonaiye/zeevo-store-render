@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 import Cookies from 'js-cookie';
 import SleekStoreTemplate from '@/components/template/sleek';
 import ModernStoreTemplate from '@/components/template/modernStore';
@@ -39,83 +40,52 @@ const ScaleLoader = ({ slug, color = 'black' }: { slug: string; color?: string }
 };
 
 // Private Store Message Component
-const PrivateStoreMessage = ({ slug }: { slug: string }) => {
+const PrivateStoreMessage = () => {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="text-center max-w-md mx-auto px-6">
-        <div className="mb-6">
-          <div className="w-20 h-20 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-            <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <div className="text-center max-w-2xl mx-auto">
+        {/* Image */}
+        <div className="mb-8 flex justify-center">
+          <Image
+            src="/images/store-404.png"
+            alt="Private store"
+            width={256}
+            height={256}
+            priority
+            className="object-contain"
+          />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Store is Private</h1>
-        <p className="text-gray-600 mb-2">
-          The store <span className="font-semibold text-gray-900">"{slug}"</span> is currently set to private.
+
+        {/* Message */}
+        <p className="text-lg text-gray-600">
+          This store is currently set to private.
         </p>
-        <p className="text-gray-500 text-sm">Please check back later or contact the store owner for access.</p>
-        <div className="mt-8">
-          <button
-            onClick={() => window.location.reload()}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Refresh Page
-          </button>
-        </div>
       </div>
     </div>
   );
 };
 
-// Store Not Found Component
-const StoreNotFound = ({ slug }: { slug: string }) => {
-  const goBack = () => {
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      window.location.href = '/';
-    }
-  };
-
+// Not Found Component - Unified for both store and page not found
+const NotFound = ({ message }: { message: string }) => {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="text-center max-w-lg mx-auto px-6">
-        <div className="mb-8">
-          <div className="w-24 h-24 mx-auto bg-red-50 rounded-full flex items-center justify-center">
-            <svg className="w-12 h-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <div className="text-center max-w-2xl mx-auto">
+        {/* Image */}
+        <div className="mb-8 flex justify-center">
+          <Image
+            src="/images/store-404.png"
+            alt="Not found"
+            width={256}
+            height={256}
+            priority
+            className="object-contain"
+          />
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Store Not Found</h1>
-        <p className="text-gray-600 mb-2 text-lg">
-          We couldn't find a store with the name <span className="font-semibold text-red-600">"{slug}"</span>
+
+        {/* Message */}
+        <p className="text-lg text-gray-600">
+          {message}
         </p>
-        <p className="text-gray-500 text-sm mb-8">The store might have been removed, renamed, or the URL might be incorrect.</p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            onClick={goBack}
-            className="inline-flex items-center px-6 py-3 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 transition-colors"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Go Back
-          </button>
-          <button
-            onClick={() => window.location.href = '/'}
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            Go Home
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -128,6 +98,7 @@ export default function StorePage() {
   const [store, setStore] = useState<any>(null);
   const [pageData, setPageData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [pageNotFound, setPageNotFound] = useState(false);
 
   // Register view once store loads
   useEffect(() => {
@@ -231,22 +202,27 @@ export default function StorePage() {
           if (storeData.template) {
             try {
               // Fetch the page data associated with this store
-              // We use the store's slug or ID to find the landing page
-              // Assuming the landing page has the same slug as the store or is the 'home' page for this store
-              // Adjusting the endpoint to fetch by storeId if possible, or using the slug if that's how it's keyed
               const pageRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/page/${slug}`);
               const pageResult = await pageRes.json();
               console.log('Fetched page result:', pageResult);
 
               if (pageRes.ok) {
-                console.log('Setting page data:', pageResult.data || pageResult);
-                setPageData(pageResult.data || pageResult);
+                const fetchedPageData = pageResult.data || pageResult;
+                // Check if page is published
+                if (fetchedPageData && fetchedPageData.isPublished !== false) {
+                  console.log('Setting page data:', fetchedPageData);
+                  setPageData(fetchedPageData);
+                } else {
+                  console.warn('Page exists but is not published');
+                  setPageNotFound(true);
+                }
               } else {
                 console.error('Failed to fetch page data');
-                // Optional: Set an error state or fallback
+                setPageNotFound(true);
               }
             } catch (pageErr) {
               console.error('Error fetching page data:', pageErr);
+              setPageNotFound(true);
             }
           }
         }
@@ -376,10 +352,15 @@ export default function StorePage() {
   }, [store?.font]);
 
   if (loading) return <ScaleLoader slug={slug as string} color={store?.secondaryColor} />;
-  if (!store) return <StoreNotFound slug={slug as string} />;
-  if (!store.isPublished) return <PrivateStoreMessage slug={slug as string} />;
+  if (!store) return <NotFound message="The store you're looking for could not be found." />;
+  if (!store.isPublished) return <PrivateStoreMessage />;
 
   if (store.template === 'custom') {
+    // Show page not found if we've determined the page doesn't exist or isn't published
+    if (pageNotFound) {
+      return <NotFound message="This store doesn't exist or hasn't been published yet." />;
+    }
+    // Still loading page data
     if (!pageData) {
       return <ScaleLoader slug={slug as string} color={store?.secondaryColor} />;
     }
